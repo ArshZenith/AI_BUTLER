@@ -1,0 +1,15 @@
+streamlit
+groq
+pytz
+requests
+yfinance
+youtube-transcript-api
+PyPDF2
+beautifulsoup4
+duckduckgo-search
+gtts
+qrcode[pil]
+Pillow
+pandas
+openpyxl
+python-dotenv
