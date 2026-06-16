@@ -7,10 +7,6 @@ import time
 import json
 from config import Config 
 
-# --- CORE IMPORTS (Lazy Loading for Speed) ---
-# Heavy libraries are imported only when needed inside functions
-# This ensures app starts in < 2 seconds
-
 # --- CONFIG & STATE INITIALIZATION ---
 def initialize_state():
     """Centralized state management to prevent undefined variables"""
@@ -25,6 +21,7 @@ def initialize_state():
     if "current_chat_id" not in st.session_state:
         cm = st.session_state.chat_manager
         all_chats = cm.chats
+        # Safe fallback agar chats empty hon
         st.session_state.current_chat_id = list(all_chats.keys())[0] if all_chats else cm.create_new_chat("👑 Royal Session")
         
     if "active_mode" not in st.session_state:
@@ -50,6 +47,10 @@ def initialize_state():
         
     if "selected_tool" not in st.session_state:
         st.session_state.selected_tool = "💬 Normal Chat"
+
+    # Username Default Setup
+    if "username" not in st.session_state:
+        st.session_state.username = "Guest"
         
     # Konami Code State
     if "konami_sequence" not in st.session_state:
@@ -366,12 +367,20 @@ def render_sidebar():
         st.markdown("<p style='text-align:center; color:#888; font-size:0.8rem;'>Royal AI Experience</p>", unsafe_allow_html=True)
         st.divider()
         
+        # Username Input (Added for Dynamic Greeting)
+        st.session_state.username = st.text_input(
+            "Your Name:", 
+            value=st.session_state.get("username", "Guest"),
+            key="username_input"
+        )
+        st.divider()
+        
         # 4-Mode Reality Grid
         st.markdown("<h4 style='color:#FFD700; text-align:center;'>SELECT REALITY</h4>", unsafe_allow_html=True)
         
         c1, c2 = st.columns(2)
         with c1:
-            if st.button("👑\nButler", key="p_butler", use_container_width=True, type="secondary"):
+            if st.button("\nButler", key="p_butler", use_container_width=True, type="secondary"):
                 st.session_state.active_mode = "butler"
                 st.session_state.current_chat_id = st.session_state.chat_manager.create_new_chat("👑 Butler Session")
                 st.session_state.toast_message = "Welcome to Butler Mode"
@@ -391,7 +400,7 @@ def render_sidebar():
                 st.session_state.toast_message = "Code Dojo Ready"
                 st.rerun()
         with c4:
-            if st.button("🧘\nZen", key="p_zen", use_container_width=True, type="secondary"):
+            if st.button("\nZen", key="p_zen", use_container_width=True, type="secondary"):
                 st.session_state.active_mode = "zen"
                 st.session_state.current_chat_id = st.session_state.chat_manager.create_new_chat("🧘 Zen Mode")
                 st.session_state.toast_message = "Zen Mode Active"
@@ -410,7 +419,7 @@ def render_sidebar():
             "💻 Code Helper",
             "📰 Daily Briefing",
             "🔍 Web Search",
-            "📄 Article Summarizer",
+            " Article Summarizer",
             "🃏 Flashcard Generator",
             "📝 Quiz Generator",
             "🌐 Translator",
@@ -418,7 +427,7 @@ def render_sidebar():
             "💡 Idea Generator",
             "🐙 GitHub Analyzer",
             "📄 Resume Analyzer",
-            "📋 Meeting Notes",
+            " Meeting Notes",
             "🔐 Password Generator",
             "📱 QR Code Generator",
             "🍳 Recipe Generator",
@@ -514,7 +523,7 @@ def render_sidebar():
         st.divider()
         
         # Chat History Manager
-        st.markdown("<h4 style='color:#FFD700; margin-top:10px;'>📜 CHATS</h4>", unsafe_allow_html=True)
+        st.markdown("<h4 style='color:#FFD700; margin-top:10px;'> CHATS</h4>", unsafe_allow_html=True)
         search_query = st.text_input("🔍 Search chats...", key="chat_search")
         
         chat_ids = list(st.session_state.chat_manager.chats.keys())
@@ -533,7 +542,7 @@ def render_sidebar():
                 is_selected = chat_id == st.session_state.current_chat_id
                 btn_type = "primary" if is_selected else "secondary"
                 title = chat_data.get("title", "Chat")
-                if chat_data.get("pinned"): title = f"📌 {title}"
+                if chat_data.get("pinned"): title = f" {title}"
                 if st.button(title, key=f"btn_{chat_id}", use_container_width=True, type=btn_type):
                     st.session_state.current_chat_id = chat_id
                     st.rerun()
@@ -569,7 +578,7 @@ def render_sidebar():
         
         if st.button("📥 Export Chat (TXT)", use_container_width=True, type="primary"):
             content = st.session_state.chat_manager.export_chat(st.session_state.current_chat_id, "txt")
-            st.download_button("⬇️ Download", content, file_name="chat.txt", use_container_width=True)
+            st.download_button("️ Download", content, file_name="chat.txt", use_container_width=True)
         
         if st.button("🗑️ Clear Chat", use_container_width=True, type="primary"):
             st.session_state.chat_manager.chats[st.session_state.current_chat_id]["messages"] = []
@@ -586,12 +595,12 @@ def render_sidebar():
 def route_features():
     """Dispatch to correct feature module based on selection"""
     core_features = [
-        "📺 YouTube Summarizer", "📄 PDF Chat", "✍️ Quick Writer", 
+        " YouTube Summarizer", "📄 PDF Chat", "✍️ Quick Writer", 
         "💻 Code Helper", "📰 Daily Briefing"
     ]
     extra_features = [
         "🔍 Web Search", "📄 Article Summarizer", "🃏 Flashcard Generator", 
-        "📝 Quiz Generator", "🌐 Translator", "📊 Text Analyzer", 
+        "📝 Quiz Generator", " Translator", "📊 Text Analyzer", 
         "💡 Idea Generator", "🐙 GitHub Analyzer", "📄 Resume Analyzer", 
         "📋 Meeting Notes", "🔐 Password Generator", "📱 QR Code Generator", 
         "🍳 Recipe Generator"
@@ -603,7 +612,7 @@ def route_features():
     
     selected = st.session_state.selected_tool
     
-    if selected == "💬 Normal Chat":
+    if selected == " Normal Chat":
         return False  # Continue to main chat
         
     try:
@@ -629,7 +638,7 @@ def render_main_chat():
     """Render the primary chat interface with voice and streaming"""
     current_mode_config = Config.MODES.get(st.session_state.active_mode, Config.MODES["butler"])
     
-    # Dynamic Greeting
+    # Dynamic Greeting (FIXED: Uses username from session state)
     ist = pytz.timezone('Asia/Kolkata')
     now = datetime.now(ist)
     hour = now.hour
@@ -638,9 +647,13 @@ def render_main_chat():
     elif 17 <= hour < 21: greeting = "Good Evening"
     else: greeting = "Good Night"
 
+    username = st.session_state.get("username", "Guest")
+    if username == "Guest" and "user_id" in st.session_state:
+        username = f"User-{st.session_state.user_id}"
+
     st.markdown(f"""
     <div style='text-align: center; margin-bottom: 20px; padding: 20px; background: rgba(20,20,30,0.4); border-radius: 15px; border: 1px solid {current_mode_config['color']}30;'>
-        <h1 style='font-family:Playfair Display; color:{current_mode_config['color']}; margin-bottom:5px;'>{greeting}, Arsh. 👑</h1>
+        <h1 style='font-family:Playfair Display; color:{current_mode_config['color']}; margin-bottom:5px;'>{greeting}, {username}. 👑</h1>
         <p style='color:#888; font-size:1.1rem;'>{now.strftime("%A, %d %B %Y")} | {now.strftime("%I:%M %p")} IST</p>
         <p style='color:#aaa; font-size:0.9rem;'>Mode: {current_mode_config['name']} | Royal Systems Online</p>
     </div>
@@ -725,7 +738,7 @@ def render_main_chat():
                 st.session_state.chat_manager.add_message(st.session_state.current_chat_id, "assistant", response_text)
                 st.rerun()
             else:
-                st.warning("⚠️ Empty response. Try again.")
+                st.warning("️ Empty response. Try again.")
                 st.session_state.toast_message = "Empty response"
 
 # --- APP ENTRY POINT ---
