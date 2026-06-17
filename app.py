@@ -7,93 +7,73 @@ import time
 import json
 from config import Config 
 
-# --- CONFIG & STATE INITIALIZATION ---
+# ==========================================
+# CONFIG & STATE INITIALIZATION
+# ==========================================
 def initialize_state():
     """Centralized state management to prevent undefined variables"""
-    if "butler" not in st.session_state:
+    defaults = {
+        "butler": None,
+        "chat_manager": None,
+        "current_chat_id": None,
+        "active_mode": "butler",
+        "last_processed_audio": None,
+        "toast_message": None,
+        "matrix_mode": False,
+        "timer_minutes": 25,
+        "timer_running": False,
+        "timer_end_time": None,
+        "selected_tool": "💬 Normal Chat",
+        "username": "Guest",
+        "konami_sequence": [],
+        "secret_unlocked": False
+    }
+    
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+    
+    # Lazy load heavy objects only once
+    if st.session_state.butler is None:
         from agent_core import AIAgentSystem
         st.session_state.butler = AIAgentSystem()
         
-    if "chat_manager" not in st.session_state:
+    if st.session_state.chat_manager is None:
         from chat_manager import ChatManager
         st.session_state.chat_manager = ChatManager()
         
-    if "current_chat_id" not in st.session_state:
+    if st.session_state.current_chat_id is None:
         cm = st.session_state.chat_manager
         all_chats = cm.chats
-        # Safe fallback agar chats empty hon
         st.session_state.current_chat_id = list(all_chats.keys())[0] if all_chats else cm.create_new_chat("👑 Royal Session")
-        
-    if "active_mode" not in st.session_state:
-        st.session_state.active_mode = "butler"
-        
-    if "last_processed_audio" not in st.session_state:
-        st.session_state.last_processed_audio = None
-        
-    if "toast_message" not in st.session_state:
-        st.session_state.toast_message = None
-        
-    if "matrix_mode" not in st.session_state:
-        st.session_state.matrix_mode = False
-        
-    if "timer_minutes" not in st.session_state:
-        st.session_state.timer_minutes = 25
-        
-    if "timer_running" not in st.session_state:
-        st.session_state.timer_running = False
-        
-    if "timer_end_time" not in st.session_state:
-        st.session_state.timer_end_time = None
-        
-    if "selected_tool" not in st.session_state:
-        st.session_state.selected_tool = "💬 Normal Chat"
-
-    # Username Default Setup
-    if "username" not in st.session_state:
-        st.session_state.username = "Guest"
-        
-    # Konami Code State
-    if "konami_sequence" not in st.session_state:
-        st.session_state.konami_sequence = []
-    if "secret_unlocked" not in st.session_state:
-        st.session_state.secret_unlocked = False
 
 initialize_state()
 
-# --- LUXURY UI ENGINE ---
+# ==========================================
+# LUXURY UI ENGINE
+# ==========================================
 def render_luxury_ui(active_mode, matrix_mode=False, secret_unlocked=False):
     """Dynamic theme injection with glassmorphism and animations"""
     themes = {
-        "butler": {"primary": "#FFD700", "secondary": "#B8860B", "bg": "#0a0a0f", "accent": "#FFD700"},
-        "roast": {"primary": "#FF4500", "secondary": "#8B0000", "bg": "#1a0505", "accent": "#FF6347"},
-        "code": {"primary": "#00FF88", "secondary": "#008B45", "bg": "#0a1410", "accent": "#00FF88"},
-        "zen": {"primary": "#A78BFA", "secondary": "#6B46C1", "bg": "#0f0f1a", "accent": "#A78BFA"}
+        "butler": {"primary": "#FFD700", "secondary": "#B8860B", "bg": "#0a0a0f"},
+        "roast": {"primary": "#FF4500", "secondary": "#8B0000", "bg": "#1a0505"},
+        "code": {"primary": "#00FF88", "secondary": "#008B45", "bg": "#0a1410"},
+        "zen": {"primary": "#A78BFA", "secondary": "#6B46C1", "bg": "#0f0f1a"}
     }
     
     t = themes.get(active_mode, themes["butler"])
     
-    # Secret Mode Override
-    if secret_unlocked:
-        bg_color = "#000000"
-        primary_color = "#00FF00"
-        secondary_color = "#008800"
-    elif matrix_mode:
-        bg_color = "#000000"
-        primary_color = "#00FF00"
-        secondary_color = "#008800"
+    if secret_unlocked or matrix_mode:
+        bg_color, primary_color, secondary_color = "#000000", "#00FF00", "#008800"
     else:
-        bg_color = t['bg']
-        primary_color = t['primary']
-        secondary_color = t['secondary']
+        bg_color, primary_color, secondary_color = t['bg'], t['primary'], t['secondary']
     
     st.markdown(f"""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600&display=swap');
         
-        /* Global Reset */
         .main {{ background: linear-gradient(135deg, {bg_color} 0%, #000000 100%) !important; font-family: 'Inter', sans-serif; }}
         
-        /* Sidebar Glassmorphism */
         section[data-testid="stSidebar"] {{
             background: linear-gradient(180deg, rgba(20,20,30,0.95) 0%, rgba(10,10,15,0.98) 100%) !important;
             backdrop-filter: blur(20px);
@@ -102,7 +82,6 @@ def render_luxury_ui(active_mode, matrix_mode=False, secret_unlocked=False):
             overflow-y: auto !important;
         }}
         
-        /* Boot Sequence Animation */
         @keyframes bootFade {{ 0% {{ opacity: 1; }} 80% {{ opacity: 1; }} 100% {{ opacity: 0; visibility: hidden; }} }}
         #boot-overlay {{
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -118,13 +97,8 @@ def render_luxury_ui(active_mode, matrix_mode=False, secret_unlocked=False):
         .progress-fill {{ height: 100%; background: linear-gradient(90deg, {primary_color}, {secondary_color}); box-shadow: 0 0 20px {primary_color}; animation: load 1.5s ease-out forwards; }}
         @keyframes load {{ 0% {{ width: 0%; }} 100% {{ width: 100%; }} }}
         
-        /* Matrix Rain Canvas */
-        #matrix-canvas {{
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 9998; pointer-events: none; opacity: 0.3;
-        }}
+        #matrix-canvas {{ position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9998; pointer-events: none; opacity: 0.3; }}
         
-        /* Chat Message Styling */
         .stChatMessage {{
             background: linear-gradient(135deg, rgba(30,30,40,0.8) 0%, rgba(20,20,30,0.9) 100%) !important;
             border: 1px solid {primary_color}30 !important;
@@ -134,65 +108,20 @@ def render_luxury_ui(active_mode, matrix_mode=False, secret_unlocked=False):
             backdrop-filter: blur(10px);
             box-shadow: 0 4px 20px rgba(0,0,0,0.3), 0 0 30px {primary_color}10 !important;
             animation: messageSlide 0.4s ease-out;
-            transition: all 0.3s ease;
-        }}
-        .stChatMessage:hover {{
-            border-color: {primary_color}60 !important;
-            box-shadow: 0 4px 30px rgba(0,0,0,0.4), 0 0 40px {primary_color}20 !important;
         }}
         @keyframes messageSlide {{ from {{ opacity: 0; transform: translateY(20px); }} to {{ opacity: 1; transform: translateY(0); }} }}
         
-        /* Input Fields */
-        div[data-baseweb="base-input"] > div {{
-            background: rgba(20,20,30,0.8) !important;
-            border: 2px solid {primary_color}40 !important;
-            border-radius: 14px !important;
-            transition: all 0.3s ease;
-        }}
-        div[data-baseweb="base-input"]:focus-within > div {{
-            border-color: {primary_color} !important;
-            box-shadow: 0 0 30px {primary_color}30 !important;
-        }}
-        
-        /* Buttons */
         .stButton > button {{
             background: linear-gradient(135deg, {primary_color} 0%, {secondary_color} 100%) !important;
             color: #000 !important;
             border: none !important;
             border-radius: 10px !important;
             font-weight: 600 !important;
-            padding: 10px 20px !important;
             transition: all 0.3s ease !important;
             box-shadow: 0 4px 15px {primary_color}40 !important;
         }}
-        .stButton > button:hover {{
-            transform: translateY(-2px) !important;
-            box-shadow: 0 6px 25px {primary_color}60 !important;
-        }}
+        .stButton > button:hover {{ transform: translateY(-2px) !important; box-shadow: 0 6px 25px {primary_color}60 !important; }}
         
-        /* Sidebar Mode Buttons */
-        div[data-testid="stSidebar"] button[kind="secondary"] {{
-            height: 80px !important;
-            background: rgba(20, 20, 30, 0.6) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            border-radius: 12px !important;
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: center !important;
-            align-items: center !important;
-            transition: all 0.3s ease !important;
-            color: #fff !important;
-            font-weight: bold !important;
-            margin-bottom: 10px !important;
-        }}
-        div[data-testid="stSidebar"] button[kind="secondary"]:hover {{
-            transform: translateY(-3px) !important;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4) !important;
-            border-color: #FFD700 !important;
-            background: rgba(40, 40, 50, 0.8) !important;
-        }}
-
-        /* Agent Badge */
         .agent-badge {{
             background: linear-gradient(135deg, {primary_color}20, {secondary_color}20);
             color: {primary_color};
@@ -202,25 +131,20 @@ def render_luxury_ui(active_mode, matrix_mode=False, secret_unlocked=False):
             display: inline-block;
             margin-bottom: 12px;
             border: 1px solid {primary_color}50;
-            box-shadow: 0 0 20px {primary_color}20;
             font-weight: 600;
-            letter-spacing: 0.5px;
         }}
         
-        /* Stat Cards */
         .stat-card {{
             background: linear-gradient(135deg, rgba(30,30,40,0.8), rgba(20,20,30,0.9));
             border: 1px solid {primary_color}30;
             border-radius: 12px;
             padding: 15px;
             margin: 10px 0;
-            backdrop-filter: blur(10px);
             text-align: center;
         }}
         .stat-value {{ font-size: 1.5rem; font-weight: 700; color: {primary_color}; }}
-        .stat-label {{ font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }}
+        .stat-label {{ font-size: 0.8rem; color: #888; text-transform: uppercase; }}
         
-        /* Toast Notification */
         .toast {{
             position: fixed; bottom: 100px; right: 30px;
             background: linear-gradient(135deg, {primary_color}, {secondary_color});
@@ -230,16 +154,8 @@ def render_luxury_ui(active_mode, matrix_mode=False, secret_unlocked=False):
         }}
         @keyframes toastSlide {{ from {{ transform: translateX(100%); opacity: 0; }} to {{ transform: translateX(0); opacity: 1; }} }}
         
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {{ width: 8px; }}
-        ::-webkit-scrollbar-track {{ background: #0a0a0f; }}
-        ::-webkit-scrollbar-thumb {{ background: {primary_color}60; border-radius: 4px; }}
-        ::-webkit-scrollbar-thumb:hover {{ background: {primary_color}; }}
-        
-        /* Hide Streamlit Branding */
         #MainMenu, footer {{ visibility: hidden; }}
         
-        /* Market Ticker Card */
         .ticker-card {{
             background: linear-gradient(135deg, rgba(30,30,40,0.8), rgba(20,20,30,0.9));
             border: 1px solid {primary_color}30;
@@ -252,80 +168,55 @@ def render_luxury_ui(active_mode, matrix_mode=False, secret_unlocked=False):
         }}
         .ticker-symbol {{ font-weight: bold; color: {primary_color}; font-size: 0.9rem; }}
         .ticker-price {{ font-size: 1.1rem; font-weight: 700; }}
-        
-        /* Dropdown Styling */
-        div[data-baseweb="select"] > div {{
-            background: rgba(20,20,30,0.8) !important;
-            border: 2px solid {primary_color}40 !important;
-            border-radius: 10px !important;
-        }}
     </style>
     
-    <!-- Boot Overlay -->
     <div id="boot-overlay">
-        <div class="boot-crown">👑</div>
+        <div class="boot-crown"></div>
         <div class="boot-text">INITIALIZING JARVIS</div>
         <div class="progress-bar"><div class="progress-fill"></div></div>
     </div>
     
-    <!-- Matrix Canvas -->
     <canvas id="matrix-canvas"></canvas>
     
-    <!-- Matrix Rain Script -->
     <script>
         const canvas = document.getElementById('matrix-canvas');
         const ctx = canvas.getContext('2d');
-        
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*';
         const fontSize = 14;
         const columns = canvas.width / fontSize;
         const drops = Array(Math.floor(columns)).fill(1);
-        
         let matrixActive = false;
-        
         function drawMatrix() {{
-            if (!matrixActive) {{
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                return;
-            }}
+            if (!matrixActive) {{ ctx.clearRect(0, 0, canvas.width, canvas.height); return; }}
             ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = '#0F0';
             ctx.font = fontSize + 'px monospace';
-            
             for (let i = 0; i < drops.length; i++) {{
                 const text = chars[Math.floor(Math.random() * chars.length)];
                 ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975)
-                    drops[i] = 0;
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
                 drops[i]++;
             }}
         }}
-        
         setInterval(drawMatrix, 35);
-        
-        window.addEventListener('message', (event) => {{
-            if (event.data.type === 'matrix_toggle') {{
-                matrixActive = event.data.active;
-            }}
-        }});
+        window.addEventListener('message', (event) => {{ if (event.data.type === 'matrix_toggle') matrixActive = event.data.active; }});
     </script>
     """, unsafe_allow_html=True)
 
-# --- CACHED FUNCTIONS FOR SPEED ---
+# ==========================================
+# CACHED FUNCTIONS
+# ==========================================
 @st.cache_resource
 def get_groq_client():
-    """Initialize Groq client once and reuse"""
     from groq import Groq
     from config import Config
     return Groq(api_key=Config.GROQ_API_KEY)
 
 @st.cache_data(ttl=300)
 def get_market_data():
-    """Fetch market data every 5 minutes only"""
     try:
         import yfinance as yf
         tickers = {"Bitcoin": "BTC-USD", "Apple": "AAPL", "Google": "GOOGL"}
@@ -341,33 +232,29 @@ def get_market_data():
     except:
         return {"Error": "Install yfinance"}
 
-# --- KONAMI CODE EASTER EGG ---
+# ==========================================
+# KONAMI CODE
+# ==========================================
 def check_konami_code():
-    """Listen for Up Up Down Down Left Right B A sequence"""
     keys = st.query_params.get_all("key")
     if keys:
         st.session_state.konami_sequence.extend(keys)
-        # Keep only last 8 keys
         st.session_state.konami_sequence = st.session_state.konami_sequence[-8:]
-        
-        konami = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", 
-                  "ArrowLeft", "ArrowRight", "b", "a"]
-        
+        konami = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "b", "a"]
         if st.session_state.konami_sequence == konami:
             st.session_state.secret_unlocked = True
             st.session_state.toast_message = "🎮 SECRET MATRIX MODE UNLOCKED!"
             st.rerun()
 
-# --- SIDEBAR CONTROL DECK ---
+# ==========================================
+# SIDEBAR
+# ==========================================
 def render_sidebar():
-    """Complete sidebar with modes, tools, timer, and chat management"""
     with st.sidebar:
-        # Header
         st.markdown("<h1 style='text-align:center; color:#FFD700; font-family:Playfair Display;'>👑 JARVIS</h1>", unsafe_allow_html=True)
         st.markdown("<p style='text-align:center; color:#888; font-size:0.8rem;'>Royal AI Experience</p>", unsafe_allow_html=True)
         st.divider()
         
-        # Username Input (Added for Dynamic Greeting)
         st.session_state.username = st.text_input(
             "Your Name:", 
             value=st.session_state.get("username", "Guest"),
@@ -375,12 +262,11 @@ def render_sidebar():
         )
         st.divider()
         
-        # 4-Mode Reality Grid
         st.markdown("<h4 style='color:#FFD700; text-align:center;'>SELECT REALITY</h4>", unsafe_allow_html=True)
         
         c1, c2 = st.columns(2)
         with c1:
-            if st.button("\nButler", key="p_butler", use_container_width=True, type="secondary"):
+            if st.button("👑\nButler", key="p_butler", use_container_width=True, type="secondary"):
                 st.session_state.active_mode = "butler"
                 st.session_state.current_chat_id = st.session_state.chat_manager.create_new_chat("👑 Butler Session")
                 st.session_state.toast_message = "Welcome to Butler Mode"
@@ -400,7 +286,7 @@ def render_sidebar():
                 st.session_state.toast_message = "Code Dojo Ready"
                 st.rerun()
         with c4:
-            if st.button("\nZen", key="p_zen", use_container_width=True, type="secondary"):
+            if st.button("🧘\nZen", key="p_zen", use_container_width=True, type="secondary"):
                 st.session_state.active_mode = "zen"
                 st.session_state.current_chat_id = st.session_state.chat_manager.create_new_chat("🧘 Zen Mode")
                 st.session_state.toast_message = "Zen Mode Active"
@@ -408,7 +294,6 @@ def render_sidebar():
                 
         st.divider()
         
-        # Super Tools Selector (22 Tools)
         st.markdown("<h4 style='color:#FFD700;'>🛠️ SUPER TOOLS</h4>", unsafe_allow_html=True)
         
         tool_options = [
@@ -419,7 +304,7 @@ def render_sidebar():
             "💻 Code Helper",
             "📰 Daily Briefing",
             "🔍 Web Search",
-            " Article Summarizer",
+            "📄 Article Summarizer",
             "🃏 Flashcard Generator",
             "📝 Quiz Generator",
             "🌐 Translator",
@@ -427,20 +312,33 @@ def render_sidebar():
             "💡 Idea Generator",
             "🐙 GitHub Analyzer",
             "📄 Resume Analyzer",
-            " Meeting Notes",
+            "📋 Meeting Notes",
             "🔐 Password Generator",
             "📱 QR Code Generator",
             "🍳 Recipe Generator",
             "📊 CSV Data Analyzer",
             "✍️ Text to Handwriting",
             "🎨 Color Palette",
-            "📧 Email Optimizer"
+            "📧 Email Optimizer",
+            "🎨 AI Image Studio",
+            "📸 Magic Vision",
+            "🗣️ AI Debate Partner",
+            "🌙 Dream Interpreter",
+            "🐉 Jarvis RPG"
         ]
+        
+        current_tool = st.session_state.selected_tool
+        safe_index = 0
+        if current_tool in tool_options:
+            safe_index = tool_options.index(current_tool)
+        else:
+            st.session_state.selected_tool = "💬 Normal Chat"
+            safe_index = 0
         
         selected_tool = st.selectbox(
             "Select Feature:",
             options=tool_options,
-            index=tool_options.index(st.session_state.selected_tool),
+            index=safe_index,
             key="tool_selector"
         )
         
@@ -450,7 +348,6 @@ def render_sidebar():
         
         st.divider()
         
-        # Live Market Ticker (Cached)
         st.markdown("<h4 style='color:#FFD700;'>📈 LIVE MARKETS</h4>", unsafe_allow_html=True)
         market_data = get_market_data()
         for name, price in market_data.items():
@@ -458,7 +355,6 @@ def render_sidebar():
         
         st.divider()
         
-        # Matrix Rain Toggle
         st.markdown("<h4 style='color:#FFD700;'>🟢 MATRIX MODE</h4>", unsafe_allow_html=True)
         matrix_toggle = st.toggle("Activate Matrix Rain", value=st.session_state.matrix_mode, key="matrix_toggle")
         if matrix_toggle != st.session_state.matrix_mode:
@@ -473,7 +369,6 @@ def render_sidebar():
         
         st.divider()
         
-        # Focus Timer
         st.markdown("<h4 style='color:#FFD700;'>⏱️ FOCUS TIMER</h4>", unsafe_allow_html=True)
         
         timer_mins = st.number_input(
@@ -517,13 +412,11 @@ def render_sidebar():
         
         st.divider()
         
-        # Voice Toggle
         st.toggle("🔊 Voice Response", value=False, key="voice_toggle")
         
         st.divider()
         
-        # Chat History Manager
-        st.markdown("<h4 style='color:#FFD700; margin-top:10px;'> CHATS</h4>", unsafe_allow_html=True)
+        st.markdown("<h4 style='color:#FFD700; margin-top:10px;'>📜 CHATS</h4>", unsafe_allow_html=True)
         search_query = st.text_input("🔍 Search chats...", key="chat_search")
         
         chat_ids = list(st.session_state.chat_manager.chats.keys())
@@ -542,7 +435,7 @@ def render_sidebar():
                 is_selected = chat_id == st.session_state.current_chat_id
                 btn_type = "primary" if is_selected else "secondary"
                 title = chat_data.get("title", "Chat")
-                if chat_data.get("pinned"): title = f" {title}"
+                if chat_data.get("pinned"): title = f"📌 {title}"
                 if st.button(title, key=f"btn_{chat_id}", use_container_width=True, type=btn_type):
                     st.session_state.current_chat_id = chat_id
                     st.rerun()
@@ -560,7 +453,6 @@ def render_sidebar():
         
         st.divider()
         
-        # System Stats
         st.markdown("<h4 style='color:#FFD700;'>📊 SYSTEM STATS</h4>", unsafe_allow_html=True)
         stats = st.session_state.chat_manager.get_stats(st.session_state.current_chat_id)
         if stats:
@@ -573,12 +465,11 @@ def render_sidebar():
         
         st.divider()
         
-        # More Settings
         st.markdown("<h4 style='color:#FFD700;'>🔧 MORE SETTINGS</h4>", unsafe_allow_html=True)
         
         if st.button("📥 Export Chat (TXT)", use_container_width=True, type="primary"):
             content = st.session_state.chat_manager.export_chat(st.session_state.current_chat_id, "txt")
-            st.download_button("️ Download", content, file_name="chat.txt", use_container_width=True)
+            st.download_button("⬇️ Download", content, file_name="chat.txt", use_container_width=True)
         
         if st.button("🗑️ Clear Chat", use_container_width=True, type="primary"):
             st.session_state.chat_manager.chats[st.session_state.current_chat_id]["messages"] = []
@@ -591,54 +482,38 @@ def render_sidebar():
             st.session_state.toast_message = "Memory cleared"
             st.rerun()
 
-# --- FEATURE ROUTING LOGIC ---
+# ==========================================
+# FEATURE ROUTING
+# ==========================================
 def route_features():
-    """Dispatch to correct feature module based on selection"""
-    core_features = [
-        " YouTube Summarizer", "📄 PDF Chat", "✍️ Quick Writer", 
-        "💻 Code Helper", "📰 Daily Briefing"
-    ]
-    extra_features = [
-        "🔍 Web Search", "📄 Article Summarizer", "🃏 Flashcard Generator", 
-        "📝 Quiz Generator", " Translator", "📊 Text Analyzer", 
-        "💡 Idea Generator", "🐙 GitHub Analyzer", "📄 Resume Analyzer", 
-        "📋 Meeting Notes", "🔐 Password Generator", "📱 QR Code Generator", 
-        "🍳 Recipe Generator"
-    ]
-    advanced_features = [
-        "📊 CSV Data Analyzer", "✍️ Text to Handwriting", 
-        "🎨 Color Palette", "📧 Email Optimizer"
-    ]
-    
     selected = st.session_state.selected_tool
     
-    if selected == " Normal Chat":
-        return False  # Continue to main chat
-        
-    try:
-        if selected in core_features or selected in extra_features or selected in advanced_features:
-            from features import render_selected_tool
-            result = render_selected_tool(selected)
-            if result == "feature_rendered":
-                return True  # Stop rendering main chat
-        else:
-            st.error(f"❌ Unknown tool: {selected}")
+    if "Normal Chat" in selected:
+        return False
+    
+    if "Jarvis RPG" in selected:
+        try:
+            from rpg_engine import render_rpg_tool
+            result = render_rpg_tool()
+            return result == "feature_rendered"
+        except Exception as e:
+            st.error(f"❌ RPG Error: {str(e)[:100]}")
             return True
-            
-    except ImportError as e:
-        st.error(f"❌ Missing module: {str(e)}")
-        st.info("💡 Run: `pip install -r requirements.txt`")
-        return True
+    
+    try:
+        from features import render_selected_tool
+        result = render_selected_tool(selected)
+        return result == "feature_rendered"
     except Exception as e:
         st.error(f"❌ Feature Error: {str(e)[:100]}")
         return True
 
-# --- MAIN CHAT INTERFACE ---
+# ==========================================
+# MAIN CHAT
+# ==========================================
 def render_main_chat():
-    """Render the primary chat interface with voice and streaming"""
     current_mode_config = Config.MODES.get(st.session_state.active_mode, Config.MODES["butler"])
     
-    # Dynamic Greeting (FIXED: Uses username from session state)
     ist = pytz.timezone('Asia/Kolkata')
     now = datetime.now(ist)
     hour = now.hour
@@ -659,19 +534,16 @@ def render_main_chat():
     </div>
     """, unsafe_allow_html=True)
 
-    # Toast Notification
     if st.session_state.toast_message:
         st.markdown(f'<div class="toast">{st.session_state.toast_message}</div>', unsafe_allow_html=True)
         st.session_state.toast_message = None
 
-    # Display Messages
     current_messages = st.session_state.chat_manager.get_chat_messages(st.session_state.current_chat_id)
     for msg in current_messages:
         if msg["role"] != "system":
             with st.chat_message(msg["role"]):
                 st.markdown(msg["content"])
 
-    # Input Area
     st.markdown("<div style='margin-top: 40px; margin-bottom: 20px;'></div>", unsafe_allow_html=True)
 
     col_voice, col_text = st.columns([1, 5])
@@ -680,10 +552,8 @@ def render_main_chat():
     with col_text:
         prompt = st.chat_input("Ask Jarvis anything...", key="main_chat_input")
 
-    # Processing Logic
     final_prompt = prompt
 
-    # Handle Voice Input
     if audio_input is not None:
         audio_hash = hash(audio_input.getvalue())
         if audio_hash != st.session_state.get("last_processed_audio"):
@@ -738,27 +608,21 @@ def render_main_chat():
                 st.session_state.chat_manager.add_message(st.session_state.current_chat_id, "assistant", response_text)
                 st.rerun()
             else:
-                st.warning("️ Empty response. Try again.")
+                st.warning("⚠️ Empty response. Try again.")
                 st.session_state.toast_message = "Empty response"
 
-# --- APP ENTRY POINT ---
+# ==========================================
+# APP ENTRY POINT
+# ==========================================
 def main():
-    # Check Konami Code
     check_konami_code()
-    
-    # Render Luxury UI
     render_luxury_ui(
         st.session_state.active_mode, 
         st.session_state.matrix_mode,
         st.session_state.secret_unlocked
     )
-    
-    # Render Sidebar
     render_sidebar()
-    
-    # Route Features or Show Chat
     feature_rendered = route_features()
-    
     if not feature_rendered:
         render_main_chat()
 
