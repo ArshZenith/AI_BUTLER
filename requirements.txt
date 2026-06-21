@@ -1,0 +1,16 @@
+streamlit
+groq
+requests
+pytz
+youtube-transcript-api
+PyPDF2
+duckduckgo-search
+beautifulsoup4
+pandas
+qrcode
+Pillow
+yfinance
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client

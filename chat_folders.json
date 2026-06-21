@@ -1,0 +1,50 @@
+{
+  "all": {
+    "id": "all",
+    "name": "All Chats",
+    "icon": "💬",
+    "color": "#FFD700",
+    "is_system": true,
+    "created": "2026-06-21T14:58:24.822861"
+  },
+  "pinned": {
+    "id": "pinned",
+    "name": "Pinned",
+    "icon": "📌",
+    "color": "#FF4500",
+    "is_system": true,
+    "created": "2026-06-21T14:58:24.822873"
+  },
+  "work": {
+    "id": "work",
+    "name": "Work",
+    "icon": "💼",
+    "color": "#00FF88",
+    "is_system": false,
+    "created": "2026-06-21T14:58:24.822877"
+  },
+  "personal": {
+    "id": "personal",
+    "name": "Personal",
+    "icon": "👤",
+    "color": "#A78BFA",
+    "is_system": false,
+    "created": "2026-06-21T14:58:24.822879"
+  },
+  "code": {
+    "id": "code",
+    "name": "Code",
+    "icon": "💻",
+    "color": "#00FFFF",
+    "is_system": false,
+    "created": "2026-06-21T14:58:24.822882"
+  },
+  "study": {
+    "id": "study",
+    "name": "Study",
+    "icon": "📚",
+    "color": "#FF69B4",
+    "is_system": false,
+    "created": "2026-06-21T14:58:24.822885"
+  }
+}
