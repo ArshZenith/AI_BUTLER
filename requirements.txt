@@ -1,5 +1,6 @@
 streamlit
 groq
+<<<<<<< HEAD
 requests
 pytz
 youtube-transcript-api
@@ -14,3 +15,18 @@ google-auth
 google-auth-oauthlib
 google-auth-httplib2
 google-api-python-client
+=======
+pytz
+requests
+yfinance
+youtube-transcript-api
+PyPDF2
+beautifulsoup4
+duckduckgo-search
+gtts
+qrcode[pil]
+Pillow
+pandas
+openpyxl
+python-dotenv
+>>>>>>> 649d5aef0355dffa597cb4cfaa2f8d7bfed2e668

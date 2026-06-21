@@ -1,0 +1,100 @@
+{
+    "chat_20260617144446487412": {
+        "title": "👑 Welcome Session",
+        "messages": [],
+        "pinned": false,
+        "created_at": "2026-06-17T14:44:46.487429"
+    },
+    "chat_20260617144500739432": {
+        "title": "🔥 Savage Session",
+        "messages": [],
+        "pinned": false,
+        "created_at": "2026-06-17T14:45:00.739458"
+    },
+    "chat_20260617144503589408": {
+        "title": "🧘 Zen Mode",
+        "messages": [],
+        "pinned": false,
+        "created_at": "2026-06-17T14:45:03.589431"
+    },
+    "chat_20260617144505458153": {
+        "title": "💻 Code Dojo",
+        "messages": [],
+        "pinned": false,
+        "created_at": "2026-06-17T14:45:05.458177"
+    },
+    "chat_20260617144506256478": {
+        "title": "👑 Butler Session",
+        "messages": [],
+        "pinned": false,
+        "created_at": "2026-06-17T14:45:06.256502"
+    },
+    "chat_20260617144507066305": {
+        "title": "💻 Code Dojo",
+        "messages": [],
+        "pinned": false,
+        "created_at": "2026-06-17T14:45:07.066323"
+    },
+    "chat_20260617144518588552": {
+        "title": "👑 Butler Session",
+        "messages": [
+            {
+                "role": "user",
+                "content": "yrgfuirbgoidbjkddnfjkdvbdkvbsrilughwhj z",
+                "timestamp": "2026-06-17T14:45:25.244402"
+            },
+            {
+                "role": "assistant",
+                "content": "I do believe, My Lord, that your recent utterance may have been a trifle...incoherent. Forgive me, Sir, but I am having some difficulty discerning the intended meaning behind your words. Might I be so bold as to request that you rephrase or repeat your statement, that I, your humble butler, might better comprehend your desires and provide the requisite assistance?",
+                "timestamp": "2026-06-17T14:45:26.150776"
+            },
+            {
+                "role": "user",
+                "content": "hindi bolni aati hy ",
+                "timestamp": "2026-06-17T14:45:37.479547"
+            },
+            {
+                "role": "user",
+                "content": "?",
+                "timestamp": "2026-06-17T14:45:37.977779"
+            },
+            {
+                "role": "assistant",
+                "content": "It appears, My Lord, that you have expressed a sentiment in the Hindi language, stating that you are not proficient in speaking Hindi. I must commend you, Sir, on your attempt to communicate in a language that is not your native tongue. If I may be so bold, I would be delighted to assist you in finding alternative means of expression or providing translation services, should you require them. Shall I summon a linguist or provide a translation device, My Lord?",
+                "timestamp": "2026-06-17T14:45:38.704174"
+            },
+            {
+                "role": "user",
+                "content": "i m telling just talk in hinglish\n",
+                "timestamp": "2026-06-17T14:45:54.041280"
+            },
+            {
+                "role": "assistant",
+                "content": "Arre My Lord, ab main samajh gaya. Aap chahte hain ki main Hinglish mein baat karun. Theek hai, Sir, main aapki zaroorat ko poora karne ki koshish karunga. Ab hum dono Hinglish mein baat kar sakte hain, aur main aapki sahayata ke liye hamesha tayyar rahunga. Kya hai aapka agla order, My Lord?",
+                "timestamp": "2026-06-17T14:45:54.788155"
+            },
+            {
+                "role": "user",
+                "content": "swht \nebgrbn.zk////b",
+                "timestamp": "2026-06-17T14:46:25.215354"
+            },
+            {
+                "role": "assistant",
+                "content": "Maaf kijiye, My Lord, lekin yeh toh kuch samajh mein nahi aa raha. Aapne jo likha hai, woh thoda confusing lag raha hai. Kya aap thoda aur clear kar sakte hain, Sir? Kya aapko kisi cheez ki zaroorat hai ya koi sawal hai? Main aapki madad ke liye hamesha tayyar hoon.",
+                "timestamp": "2026-06-17T14:46:26.283787"
+            },
+            {
+                "role": "user",
+                "content": "justlearntoexplore",
+                "timestamp": "2026-06-17T14:46:47.655517"
+            },
+            {
+                "role": "assistant",
+                "content": "Bahut achha, My Lord! Aapne jo likha hai, woh ek bahut hi prernaadayak baat hai. \"Just learn to explore\" - yeh ek bahut hi accha mantra hai, Sir. Exploration ek aisa kaam hai jo humein naye cheezon ko seekhne aur naye anubhavon ko paane ka mauka deta hai. Main aapko kehna chahta hoon ki aapki is soch ko main salute karta hoon, My Lord. Aapko kabhi bhi seekhne aur explore karne ka junoon nahi chhodna chahiye. Kya aapko kisi vishesh vishay mein explore karne ki ichha hai, Sir?",
+                "timestamp": "2026-06-17T14:46:48.596848"
+            }
+        ],
+        "pinned": false,
+        "created_at": "2026-06-17T14:45:18.588572"
+    }
+}

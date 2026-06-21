@@ -1,6 +1,7 @@
 {
   "chat_1781542964": {
     "title": "New Chat",
+<<<<<<< HEAD
     "messages": [
       {
         "role": "user",
@@ -198,5 +199,11 @@
     "created": "2026-06-20T14:45:51.993553",
     "pinned": false,
     "tags": []
+=======
+    "messages": [],
+    "created": "2026-06-15T22:32:44.631395",
+    "pinned": false,
+    "tags": []
+>>>>>>> 649d5aef0355dffa597cb4cfaa2f8d7bfed2e668
   }
 }

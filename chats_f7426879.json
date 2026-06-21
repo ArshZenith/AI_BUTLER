@@ -1,0 +1,19 @@
+{
+    "chat_20260616230539270040": {
+        "title": "👑 Welcome Session",
+        "messages": [
+            {
+                "role": "user",
+                "content": "hii",
+                "timestamp": "2026-06-16T23:05:47.813342"
+            },
+            {
+                "role": "assistant",
+                "content": "Good day, Sir. I do hope this encounter finds you in optimal spirits and health. Might I be so bold as to inquire as to how I may be of service to you on this fine day? Perhaps a refreshing beverage or a brief respite in the library would be to your liking, My Lord?",
+                "timestamp": "2026-06-16T23:05:48.487530"
+            }
+        ],
+        "pinned": false,
+        "created_at": "2026-06-16T23:05:39.270057"
+    }
+}
