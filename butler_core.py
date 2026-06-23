@@ -3,53 +3,107 @@ from groq import Groq
 from config import Config
 from tools import ButlerTools
 from voice_engine import VoiceEngine
+from memory import ButlerMemory
 import json
 import re
+import time
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class AIButler:
-    """Integrated AI Butler with Smart Tool Usage"""
+    """Integrated AI Butler with Smart Tool Usage & Memory"""
     
     def __init__(self):
+        if not Config.GROQ_API_KEY:
+            st.error("❌ CRITICAL: GROQ_API_KEY is missing in .env file.")
+            st.stop()
+            
         self.client = Groq(api_key=Config.GROQ_API_KEY)
         self.tools = ButlerTools()
         self.voice = VoiceEngine()
+        self.memory = ButlerMemory()
         
-        # Define available tools for AI
+        # Define available tools for AI (matches ButlerTools methods)
         self.available_tools = {
-            "get_weather": "Get current weather for a city",
-            "search_web": "Search the internet for information",
-            "get_news": "Get latest news updates",
-            "calculate": "Perform mathematical calculations",
-            "get_time_date": "Get current time and date"
+            "get_weather": "Get current weather for a city (params: city)",
+            "search_web": "Search the internet for information (params: query)",
+            "get_news": "Get latest news updates (no params)",
+            "calculate": "Perform mathematical calculations (params: expression)",
+            "get_time_date": "Get current time and date (no params)"
         }
+        
+        logger.info("✅ AIButler initialized successfully")
     
-    def process_query(self, user_message: str, messages: list, use_voice: bool = False) -> dict:
+    def process_query(self, user_message: str, messages: list, use_voice: bool = False, 
+                      custom_prompt: str = None, voice_settings: dict = None) -> dict:
         """Main processing function with integrated tool usage"""
-        result = {'response': '', 'audio_path': None, 'tool_used': None}
+        result = {
+            'response': '', 
+            'audio_path': None, 
+            'tool_used': None,
+            'response_time': 0
+        }
+        
+        start_time = time.time()
         
         try:
             # Step 1: Check if AI wants to use a tool
-            tool_call = self._detect_tool_intent(messages)
+            tool_call = self._detect_tool_intent(user_message)
             
             if tool_call:
                 # Execute the tool
                 tool_result = self._execute_tool(tool_call, user_message)
                 result['response'] = tool_result
                 result['tool_used'] = tool_call['name']
+                result['model_used'] = "Tool"
             else:
-                # Normal AI conversation
-                result['response'] = self._get_ai_response(messages)
+                # Normal AI conversation with memory
+                memories = self.memory.get_relevant_memories(user_message)
+                context = "\n".join(memories) if memories else ""
+                
+                # Limit context to last 8 messages
+                context_messages = messages[-8:] if len(messages) > 8 else messages
+                
+                result['response'] = self._get_ai_response(
+                    context_messages, 
+                    context, 
+                    custom_prompt
+                )
+                result['model_used'] = Config.MODEL_ID
             
-            # Step 2: Generate voice if enabled
+            # Step 2: Save to memory (silent failure)
+            try:
+                self.memory.save_interaction(user_message, result['response'])
+            except Exception as e:
+                logger.warning(f"Memory save error: {e}")
+            
+            # Step 3: Generate voice if enabled
             if use_voice and result['response']:
-                result['audio_path'] = self.voice.text_to_speech(result['response'])
+                lang = voice_settings.get('lang', 'en') if voice_settings else 'en'
+                speed = voice_settings.get('speed', 'normal') if voice_settings else 'normal'
+                result['audio_path'] = self.voice.text_to_speech(
+                    result['response'], 
+                    lang=lang, 
+                    speed=speed
+                )
             
+            result['response_time'] = round(time.time() - start_time, 2)
+            logger.info(f"Query processed in {result['response_time']}s using {result['tool_used'] or 'AI'}")
             return result
             
         except Exception as e:
-            return {'response': f"⚠️ System Error: {str(e)}", 'audio_path': None, 'tool_used': None}
+            logger.error(f"Process query error: {e}")
+            return {
+                'response': f"⚠️ System Error: {str(e)}", 
+                'audio_path': None, 
+                'tool_used': None,
+                'response_time': round(time.time() - start_time, 2)
+            }
 
-    def _detect_tool_intent(self, messages: list) -> dict:
+    def _detect_tool_intent(self, user_message: str) -> dict:
         """Detect if user wants to use a tool using AI"""
         try:
             # Ask AI to decide if a tool is needed
@@ -57,7 +111,7 @@ class AIButler:
                 model="llama-3.1-8b-instant",  # Fast model for decision making
                 messages=[
                     {"role": "system", "content": self._get_tool_decision_system()},
-                    {"role": "user", "content": messages[-1]["content"] if messages else ""}
+                    {"role": "user", "content": user_message}
                 ],
                 temperature=0,
                 max_tokens=200
@@ -75,7 +129,7 @@ class AIButler:
                 for line in lines:
                     if line.startswith("tool:"):
                         tool_name = line.replace("tool:", "").strip()
-                    elif ":" in line and not line.startswith("reason:"):
+                    elif ":" in line and not line.startswith("reason:") and not line.startswith("TOOL"):
                         key, value = line.split(":", 1)
                         params[key.strip()] = value.strip()
                 
@@ -85,17 +139,18 @@ class AIButler:
             return None
             
         except Exception as e:
-            print(f"Tool detection error: {e}")
+            logger.error(f"Tool detection error: {e}")
             return None
 
     def _execute_tool(self, tool_call: dict, user_message: str) -> str:
-        """Execute the detected tool"""
+        """Execute the detected tool using ButlerTools"""
         tool_name = tool_call['name']
         params = tool_call['params']
         
         try:
+            # Map tool names to ButlerTools methods
             if tool_name == "get_weather":
-                city = params.get('city', 'London')
+                city = params.get('city', 'Delhi')
                 return self.tools.get_weather(city)
                 
             elif tool_name == "search_web":
@@ -116,18 +171,31 @@ class AIButler:
             elif tool_name == "get_time_date":
                 return self.tools.get_time_date()
             
-            return "Tool not found."
+            return f"Tool '{tool_name}' not found."
             
         except Exception as e:
+            logger.error(f"Tool execution failed: {e}")
             return f"Tool execution failed: {str(e)}"
 
-    def _get_ai_response(self, messages: list) -> str:
+    def _get_ai_response(self, messages: list, context: str, custom_prompt: str = None) -> str:
         """Get response from Groq AI with tool awareness"""
         try:
-            # Enhanced system prompt that knows about tools
+            system_content = custom_prompt if custom_prompt else self._get_enhanced_system_prompt()
+            
+            # Add memory context if available
+            if context:
+                system_content += f"\n\nRelevant Memory:\n{context[:500]}"
+            
+            # Clean messages
+            clean_messages = [
+                {"role": msg["role"], "content": msg["content"]}
+                for msg in messages
+                if isinstance(msg, dict) and "role" in msg and "content" in msg
+            ]
+            
             enhanced_messages = [
-                {"role": "system", "content": self._get_enhanced_system_prompt()},
-                *messages
+                {"role": "system", "content": system_content},
+                *clean_messages
             ]
             
             response = self.client.chat.completions.create(
@@ -150,18 +218,17 @@ class AIButler:
             return full_response
             
         except Exception as e:
+            logger.error(f"Groq API Error: {e}")
             raise Exception(f"Groq API Error: {str(e)}")
 
     def _get_tool_decision_system(self) -> str:
         """System prompt for tool detection"""
-        return """You are a tool detector. Analyze the user's message and decide if they need a tool.
+        tools_desc = "\n".join([f"- {k}: {v}" for k, v in self.available_tools.items()])
+        
+        return f"""You are a tool detector. Analyze the user's message and decide if they need a tool.
 
 Available tools:
-- get_weather: For weather information (needs: city)
-- search_web: For searching internet (needs: query)
-- get_news: For latest news (no params needed)
-- calculate: For math calculations (needs: expression)
-- get_time_date: For current time/date (no params needed)
+{tools_desc}
 
 Respond in this format:
 TOOL_NEEDED
@@ -177,20 +244,15 @@ Be concise."""
 
     def _get_enhanced_system_prompt(self) -> str:
         """Enhanced system prompt that mentions available tools"""
+        tools_list = ", ".join(self.available_tools.keys())
+        
         return f"""You are JARVIS, an elite AI Butler with integrated tools.
 
 YOUR CAPABILITIES:
-- You have access to real-time tools for weather, web search, news, calculations, and time
+- You have access to real-time tools: {tools_list}
 - When users ask about weather, time, news, or calculations, you can use tools
 - For general conversation, use your knowledge
 - Always be professional, helpful, and concise
-
-AVAILABLE TOOLS (used automatically):
-- Weather information (current conditions)
-- Web search (latest information)
-- News updates (technology and general)
-- Calculator (mathematical operations)
-- Time and date (current)
 
 PERSONALITY:
 - Professional and courteous
@@ -215,4 +277,5 @@ Always identify yourself as Jarvis when appropriate."""
             )
             return response.choices[0].message.content
         except Exception as e:
+            logger.error(f"File analysis failed: {e}")
             return f"File analysis failed: {str(e)}"

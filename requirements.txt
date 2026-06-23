@@ -8,7 +8,7 @@ duckduckgo-search
 beautifulsoup4
 pandas
 qrcode[pil]
-Pillow
+Pillow   
 yfinance
 google-auth
 google-auth-oauthlib

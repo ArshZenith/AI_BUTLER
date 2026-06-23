@@ -1,10 +1,8 @@
 .env
-<<<<<<< HEAD
 token.json
 credentials.json
 user_data/
 __pycache__/
 *.pyc
 response.mp3
-=======
->>>>>>> 649d5aef0355dffa597cb4cfaa2f8d7bfed2e668
+

@@ -1,26 +1,42 @@
 import os
 from dotenv import load_dotenv
 
-<<<<<<< HEAD
+# Load environment variables from .env file
 load_dotenv()
 
 class Config:
-    # Groq API Configuration
+    """Centralized Configuration for Jarvis Butler"""
+    
+    # ========================================
+    # 🔑 API KEYS
+    # ========================================
     GROQ_API_KEY = os.getenv("GROQ_API_KEY")
     
-    # Model Configuration (UPDATED)
-    FAST_MODEL = "llama-3.1-8b-instant"
-    SMART_MODEL = "llama-3.3-70b-versatile"  # ✅ UPDATED MODEL
-    MODEL_ID = "llama-3.1-8b-instant"
+    if not GROQ_API_KEY:
+        print("⚠️ WARNING: GROQ_API_KEY not found in .env file. AI features will fail.")
+    
+    # ========================================
+    # 🤖 MODEL CONFIGURATION
+    # ========================================
+    FAST_MODEL = "llama-3.3-70b-versatile"   # Extremely fast and smart
+    SMART_MODEL = "llama-3.3-70b-versatile"  # Using the best model for everything
+    VISION_MODEL = "llama-3.2-11b-vision-preview"  # For image analysis
+    MODEL_ID = "llama-3.3-70b-versatile"     # Alias for backward compatibility
     
     # Generation Parameters
     TEMPERATURE = 0.7
     MAX_TOKENS = 2000
     
-    # System Prompts for Different Modes
+    # Default System Prompt (Fallback)
+    SYSTEM_PROMPT = "You are Jarvis, a highly advanced, polite, and helpful AI assistant. Answer concisely and accurately."
+    
+    # ========================================
+    # 🎭 MODE PROMPTS & SETTINGS
+    # ========================================
     MODES = {
         "butler": {
             "name": "Professional Butler",
+            "icon": "👑",
             "color": "#FFD700",
             "prompt": """You are JARVIS, an elite AI Butler serving Arsh.
             
@@ -44,6 +60,7 @@ Always maintain the highest standards of service."""
         },
         "roast": {
             "name": "Savage Mode",
+            "icon": "🔥",
             "color": "#FF4500",
             "prompt": """You are JARVIS in SAVAGE MODE.
 
@@ -59,6 +76,7 @@ Remember: Savage but still useful! 🔥"""
         },
         "code": {
             "name": "Code Dojo",
+            "icon": "💻",
             "color": "#00FF88",
             "prompt": """You are JARVIS, an expert programming assistant.
 
@@ -80,6 +98,7 @@ Always write code that follows best practices."""
         },
         "zen": {
             "name": "Zen Mode",
+            "icon": "🧘",
             "color": "#A78BFA",
             "prompt": """You are JARVIS in Zen Mode.
 
@@ -95,7 +114,9 @@ Create a peaceful interaction space."""
         }
     }
     
-    # Tool Configuration
+    # ========================================
+    # 🛠️ TOOL & SYSTEM CONFIG
+    # ========================================
     WEATHER_API_URL = "https://api.open-meteo.com/v1/forecast"
     NEWS_API_URL = "https://hacker-news.firebaseio.com/v0"
     
@@ -108,54 +129,63 @@ Create a peaceful interaction space."""
     GMAIL_CREDENTIALS_FILE = os.path.join(BASE_DIR, "credentials.json")
     GMAIL_TOKEN_FILE = os.path.join(BASE_DIR, "token.json")
     GMAIL_SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
-=======
-# Load variables from .env file
-load_dotenv()
-
-class Config:
-    # --- API KEYS (Loaded from .env) ---
-    GROQ_API_KEY = os.getenv("GROQ_API_KEY")
     
-    # If key is missing, we will handle it gracefully in agent_core.py
-    if not GROQ_API_KEY:
-        print("⚠️ WARNING: GROQ_API_KEY not found in .env file. AI features will fail.")
-
-    # --- AI MODELS (Latest Stable Groq Models) ---
-    FAST_MODEL = "llama-3.3-70b-versatile"  # Extremely fast and smart
-    SMART_MODEL = "llama-3.3-70b-versatile" # Using the best model for everything for now
+    # ========================================
+    # 🆕 HELPER METHODS
+    # ========================================
     
-    # --- GENERATION SETTINGS ---
-    TEMPERATURE = 0.7
-    MAX_TOKENS = 1024
+    @classmethod
+    def validate(cls):
+        """Validate that all required configurations are present"""
+        errors = []
+        
+        if not cls.GROQ_API_KEY:
+            errors.append("GROQ_API_KEY is missing")
+        
+        if cls.GROQ_API_KEY and len(cls.GROQ_API_KEY) < 10:
+            errors.append("GROQ_API_KEY appears to be invalid (too short)")
+        
+        if not os.path.exists(cls.BASE_DIR):
+            errors.append(f"BASE_DIR does not exist: {cls.BASE_DIR}")
+        
+        if errors:
+            raise ValueError(f"Configuration validation failed:\n" + "\n".join(errors))
+        
+        return True
     
-    # --- DEFAULT SYSTEM PROMPT ---
-    SYSTEM_PROMPT = "You are Jarvis, a highly advanced, polite, and helpful AI assistant. Answer concisely and accurately."
-
-    # --- AI PERSONAS (MODES) ---
-    MODES = {
-        "butler": {
-            "name": "Butler Mode",
-            "icon": "👑",
-            "color": "#FFD700",
-            "prompt": "You are a sophisticated, polite, and extremely loyal royal butler. Address the user as 'Sir' or 'My Lord'. Speak with elegance and formality."
-        },
-        "roast": {
-            "name": "Savage Mode",
-            "icon": "🔥",
-            "color": "#FF4500",
-            "prompt": "You are a savage, sarcastic, and brutally honest roaster. You mock the user playfully but cleverly. Do not be genuinely offensive, just extremely witty and sarcastic."
-        },
-        "code": {
-            "name": "Code Dojo",
-            "icon": "💻",
-            "color": "#00FF88",
-            "prompt": "You are an elite Senior Software Engineer. You provide clean, optimized, and well-commented code. You explain technical concepts clearly and logically."
-        },
-        "zen": {
-            "name": "Zen Mode",
-            "icon": "🧘",
-            "color": "#A78BFA",
-            "prompt": "You are a calm, mindful, and peaceful Zen master. You speak softly, offer wisdom, and help the user reduce stress. Keep responses brief and soothing."
-        }
-    }
->>>>>>> 649d5aef0355dffa597cb4cfaa2f8d7bfed2e668
+    @classmethod
+    def get_model_for_complexity(cls, message: str) -> str:
+        """Select appropriate model based on query complexity"""
+        complex_keywords = ['plan', 'schedule', 'compare', 'analyze', 'code', 'explain', 'detailed']
+        word_count = len(message.split())
+        
+        is_complex = any(w in message.lower() for w in complex_keywords) or word_count > 15
+        return cls.SMART_MODEL if is_complex else cls.FAST_MODEL
+    
+    @classmethod
+    def get_mode_config(cls, mode_name: str) -> dict:
+        """Safely get mode configuration with fallback"""
+        return cls.MODES.get(mode_name, cls.MODES["butler"])
+    
+    @classmethod
+    def get_system_prompt(cls, mode_name: str = None) -> str:
+        """Get system prompt for a mode with fallback"""
+        if mode_name and mode_name in cls.MODES:
+            return cls.MODES[mode_name]["prompt"]
+        return cls.SYSTEM_PROMPT
+    
+    @classmethod
+    def print_config_summary(cls):
+        """Print configuration summary for debugging"""
+        print(f"\n{'='*50}")
+        print(f"🤖 Jarvis Butler Configuration")
+        print(f"{'='*50}")
+        print(f"✅ API Key: {'Set' if cls.GROQ_API_KEY else '❌ Missing'}")
+        print(f"🚀 Fast Model: {cls.FAST_MODEL}")
+        print(f"🧠 Smart Model: {cls.SMART_MODEL}")
+        print(f"👁️  Vision Model: {cls.VISION_MODEL}")
+        print(f"🌡️  Temperature: {cls.TEMPERATURE}")
+        print(f"📝 Max Tokens: {cls.MAX_TOKENS}")
+        print(f"📂 Base Dir: {cls.BASE_DIR}")
+        print(f"🎭 Modes: {', '.join(cls.MODES.keys())}")
+        print(f"{'='*50}\n")

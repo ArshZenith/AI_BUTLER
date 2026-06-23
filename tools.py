@@ -1,9 +1,13 @@
 import requests
-<<<<<<< HEAD
 import re
 import os
 from datetime import datetime, timezone, timedelta
-from gmail_tools import GmailSummarizer
+
+# Safe imports for optional tools
+try:
+    from gmail_tools import GmailSummarizer
+except ImportError:
+    GmailSummarizer = None
 
 class ButlerTools:
     """
@@ -13,7 +17,11 @@ class ButlerTools:
     
     def __init__(self):
         """Initialize all tool services"""
-        self.gmail_service = GmailSummarizer()
+        if GmailSummarizer:
+            self.gmail_service = GmailSummarizer()
+        else:
+            self.gmail_service = None
+            
         self._setup_constants()
     
     def _setup_constants(self):
@@ -51,10 +59,7 @@ class ButlerTools:
     # 🌤️ WEATHER TOOL
     # ========================================
     def get_weather(self, city: str = "Delhi") -> str:
-        """
-        Get current weather for a city using Open-Meteo API
-        No API key required - completely free!
-        """
+        """Get current weather for a city using Open-Meteo API (No API Key)"""
         try:
             # Step 1: Get coordinates
             geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={city}&count=1"
@@ -88,8 +93,6 @@ class ButlerTools:
             
         except requests.exceptions.Timeout:
             return f"⚠️ Weather service timeout for {city}"
-        except requests.exceptions.RequestException as e:
-            return f"⚠️ Weather API Error: {str(e)}"
         except Exception as e:
             return f"⚠️ Weather Error: {str(e)}"
     
@@ -97,10 +100,7 @@ class ButlerTools:
     # 🔍 WEB SEARCH TOOL
     # ========================================
     def search_web(self, query: str) -> str:
-        """
-        Search the web using DuckDuckGo Instant Answer API
-        No API key required!
-        """
+        """Search the web using DuckDuckGo Instant Answer API (No API Key)"""
         try:
             url = f"https://api.duckduckgo.com/?q={requests.utils.quote(query)}&format=json"
             res = requests.get(url, timeout=self.TIMEOUT).json()
@@ -134,17 +134,17 @@ class ButlerTools:
     # 📰 NEWS TOOL
     # ========================================
     def get_news(self, category: str = "tech") -> str:
-        """
-        Get latest news from Hacker News API
-        No API key required!
-        """
+        """Get latest news from Hacker News API (No API Key)"""
         try:
             url = "https://hacker-news.firebaseio.com/v0/topstories.json"
             ids = requests.get(url, timeout=self.TIMEOUT).json()[:5]
             
             news = []
             for i, story_id in enumerate(ids, 1):
-                item = requests.get(f"https://hacker-news.firebaseio.com/v0/item/{story_id}.json", timeout=self.TIMEOUT).json()
+                item = requests.get(
+                    f"https://hacker-news.firebaseio.com/v0/item/{story_id}.json", 
+                    timeout=self.TIMEOUT
+                ).json()
                 title = item.get('title', 'No title')
                 url_link = item.get('url', f"https://news.ycombinator.com/item?id={story_id}")
                 score = item.get('score', 0)
@@ -162,9 +162,7 @@ class ButlerTools:
     # 🕐 TIME & DATE TOOL
     # ========================================
     def get_time_date(self) -> str:
-        """
-        Get current date and time in IST (Indian Standard Time)
-        """
+        """Get current date and time in IST (Indian Standard Time)"""
         try:
             ist = timezone(self.IST_OFFSET)
             now = datetime.now(ist)
@@ -182,10 +180,7 @@ class ButlerTools:
     # 🧮 CALCULATOR TOOL
     # ========================================
     def calculate(self, expression: str) -> str:
-        """
-        Safe mathematical calculator
-        Only allows: digits, +, -, *, /, ., (, ), spaces
-        """
+        """Safe mathematical calculator (Only allows digits and basic operators)"""
         try:
             # Security check - only allow safe characters
             allowed_pattern = re.compile(r'^[\d\+\-\*\/\.\(\)\s]+$')
@@ -220,10 +215,10 @@ class ButlerTools:
     # 📧 GMAIL SUMMARIZER TOOL
     # ========================================
     def summarize_gmails(self, max_results: int = 10, hours_back: int = 24) -> str:
-        """
-        Fetch and summarize recent Gmail emails
-        Requires: Google OAuth setup (credentials.json)
-        """
+        """Fetch and summarize recent Gmail emails (Requires credentials.json)"""
+        if not self.gmail_service:
+            return "⚠️ Gmail tools not installed. Please install required dependencies."
+            
         try:
             # Check if credentials exist
             if not os.path.exists('credentials.json'):
@@ -234,13 +229,11 @@ To enable Gmail summarization:
 2. Create a project and enable Gmail API
 3. Create OAuth 2.0 credentials (Desktop app)
 4. Download `credentials.json` and place it in this folder
-5. Restart the app and try again
-
-Need help? Ask me "how to setup Gmail API" """
+5. Restart the app and try again"""
             
             # Fetch and summarize emails
             summary = self.gmail_service.get_email_summary(
-                max_results=max_results,
+                max_results=max_results, 
                 hours_back=hours_back
             )
             
@@ -253,59 +246,44 @@ Need help? Ask me "how to setup Gmail API" """
             return f"⚠️ Gmail Error: {str(e)}"
     
     def check_gmail_auth_status(self) -> dict:
-        """
-        Check if Gmail is authenticated
-        Returns: {'authenticated': bool, 'message': str}
-        """
+        """Check if Gmail is authenticated"""
+        if not self.gmail_service:
+            return {'authenticated': False, 'message': 'Gmail tools not installed'}
+            
         try:
             if not os.path.exists('credentials.json'):
-                return {
-                    'authenticated': False,
-                    'message': 'credentials.json not found'
-                }
+                return {'authenticated': False, 'message': 'credentials.json not found'}
             
             if not os.path.exists('token.json'):
-                return {
-                    'authenticated': False,
-                    'message': 'Not authenticated yet'
-                }
+                return {'authenticated': False, 'message': 'Not authenticated yet'}
             
             # Try to authenticate silently
             success, msg = self.gmail_service.authenticate()
-            
-            return {
-                'authenticated': success,
-                'message': msg
-            }
+            return {'authenticated': success, 'message': msg}
             
         except Exception as e:
-            return {
-                'authenticated': False,
-                'message': str(e)
-            }
+            return {'authenticated': False, 'message': str(e)}
     
     # ========================================
     # 🛠️ UTILITY METHODS
     # ========================================
     def get_available_tools(self) -> dict:
-        """
-        Get list of all available tools with descriptions
-        Used by AI to understand what tools it can use
-        """
-        return {
+        """Get list of all available tools with descriptions"""
+        tools = {
             "get_weather": "Get current weather for a city (params: city)",
             "search_web": "Search the internet for information (params: query)",
             "get_news": "Get latest tech news from Hacker News (no params)",
             "get_time_date": "Get current date and time in IST (no params)",
-            "calculate": "Perform mathematical calculations (params: expression)",
-            "summarize_gmails": "Fetch and summarize recent Gmail emails (params: max_results, hours_back)"
+            "calculate": "Perform mathematical calculations (params: expression)"
         }
+        
+        if self.gmail_service:
+            tools["summarize_gmails"] = "Fetch and summarize recent Gmail emails (params: max_results, hours_back)"
+            
+        return tools
     
     def execute_tool(self, tool_name: str, **kwargs) -> str:
-        """
-        Execute a tool by name with given parameters
-        Central dispatcher for all tools
-        """
+        """Execute a tool by name with given parameters (Central dispatcher)"""
         tool_map = {
             'get_weather': self.get_weather,
             'search_web': self.search_web,
@@ -323,70 +301,4 @@ Need help? Ask me "how to setup Gmail API" """
         except TypeError as e:
             return f"❌ Invalid parameters for {tool_name}: {str(e)}"
         except Exception as e:
-            return f"⚠️ Tool execution error: {str(e)}" 
-=======
-import datetime
-import pytz
-import re
-
-class ButlerTools:
-    def get_time_date(self):
-        ist = pytz.timezone('Asia/Kolkata')
-        now = datetime.datetime.now(ist)
-        return f"Current time in India is {now.strftime('%I:%M %p')} on {now.strftime('%A, %d %B %Y')}."
-
-    def get_weather(self, city="Delhi"):
-        try:
-            # Using Open-Meteo (Free, No API Key required)
-            # Geocoding
-            geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={city}&count=1"
-            geo_res = requests.get(geo_url, timeout=5).json()
-            
-            if "results" not in geo_res:
-                return f"Could not find weather data for {city}."
-            
-            lat = geo_res["results"][0]["latitude"]
-            lon = geo_res["results"][0]["longitude"]
-            
-            # Weather
-            weather_url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true"
-            weather_res = requests.get(weather_url, timeout=5).json()
-            
-            temp = weather_res["current_weather"]["temperature"]
-            return f"The current temperature in {city} is {temp}°C."
-        except Exception as e:
-            return f"Unable to fetch weather for {city} at the moment."
-
-    def get_news(self):
-        try:
-            from duckduckgo_search import DDGS
-            results = DDGS().news("latest technology news", max_results=3)
-            news_list = []
-            for r in results:
-                news_list.append(f"- **{r['title']}** ({r['source']})")
-            return "\n".join(news_list) if news_list else "No news found."
-        except Exception:
-            return "News service is currently unavailable."
-
-    def calculate(self, expression):
-        try:
-            # Safe evaluation
-            allowed_chars = set("0123456789+-*/.() ")
-            if not all(c in allowed_chars for c in expression):
-                return "Invalid characters in expression."
-            result = eval(expression)
-            return f"The result is {result}."
-        except Exception:
-            return "Could not calculate that expression."
-
-    def search_web(self, query):
-        try:
-            from duckduckgo_search import DDGS
-            results = DDGS().text(query, max_results=3)
-            summary = []
-            for r in results:
-                summary.append(f"- {r['title']}: {r['href']}")
-            return "\n".join(summary) if summary else "No results found."
-        except Exception:
-            return "Web search is currently unavailable."
->>>>>>> 649d5aef0355dffa597cb4cfaa2f8d7bfed2e668
+            return f"⚠️ Tool execution error: {str(e)}"

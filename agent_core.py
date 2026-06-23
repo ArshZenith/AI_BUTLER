@@ -4,7 +4,6 @@ from config import Config
 from tools import ButlerTools
 from voice_engine import VoiceEngine
 from memory import ButlerMemory
-<<<<<<< HEAD
 from planner_agent import PlannerAgent
 import re
 import time
@@ -17,23 +16,15 @@ class AIAgentSystem:
     
     def __init__(self):
         """Initialize all core services"""
-=======
-import time
-import re
-
-class AIAgentSystem:
-    def __init__(self):
         if not Config.GROQ_API_KEY:
             st.error("❌ CRITICAL: GROQ_API_KEY is missing in .env file. Please check your .env file.")
             st.stop()
             
         # Initialize Core Components
->>>>>>> 649d5aef0355dffa597cb4cfaa2f8d7bfed2e668
         self.client = Groq(api_key=Config.GROQ_API_KEY)
         self.tools = ButlerTools()
         self.voice = VoiceEngine()
         self.memory = ButlerMemory()
-<<<<<<< HEAD
         self.planner = PlannerAgent()
         
         # Tool patterns for quick detection
@@ -63,7 +54,6 @@ class AIAgentSystem:
                 r'\bcalculate\b', r'\bcalc\b', r'\bkitna hoga\b',
                 r'\bhow much\b', r'\bwhat is\b.*[\d\+\-\*\/]'
             ]
-            # ✅ GMAIL REMOVED: Handled by dedicated UI tool in features.py to avoid OAuth conflicts
         }
     
     def process_query(self, user_message: str, messages: list, use_voice: bool = False, 
@@ -77,21 +67,12 @@ class AIAgentSystem:
             'audio_path': None,
             'agent_used': 'AI',
             'model_used': 'Fast (8B)',
-=======
-        
-    def process_query(self, user_message: str, messages: list, use_voice: bool = False, custom_prompt: str = None) -> dict:
-        result = {
-            'response': '', 
-            'audio_path': None, 
-            'agent_used': 'AI', 
->>>>>>> 649d5aef0355dffa597cb4cfaa2f8d7bfed2e668
             'response_time': 0
         }
         
         start_time = time.time()
         
         try:
-<<<<<<< HEAD
             # ✅ STRICT CONTEXT MANAGEMENT (Last 8 messages to avoid 413 errors)
             context_messages = messages[-8:] if len(messages) > 8 else messages
             
@@ -132,64 +113,11 @@ class AIAgentSystem:
                     result['response'], voice_settings
                 )
                     
-=======
-            # 1. FAST PATH: Check if user wants a specific tool (Time, Weather, News, Calc)
-            tool_result = self._check_tools(user_message)
-            if tool_result:
-                result['response'] = tool_result
-                result['agent_used'] = 'Tool'
-                result['response_time'] = round(time.time() - start_time, 2)
-                # Tools don't need memory saving usually, but we can save it
-                self.memory.save_interaction(user_message, tool_result)
-                return result
-
-            # 2. SLOW PATH: AI Processing
-            # Keep only last 6 messages to save tokens and prevent crashes
-            context_messages = messages[-6:] if len(messages) > 6 else messages
-            
-            # Prepare System Prompt
-            system_content = custom_prompt if custom_prompt else Config.SYSTEM_PROMPT
-            
-            # Inject Long-Term Memory
-            relevant_memories = self.memory.get_relevant_memories(user_message)
-            if relevant_memories:
-                system_content += "\n\n--- Relevant Past Memories ---\n" + "\n".join(relevant_memories)
-
-            # Format messages for Groq API
-            final_messages = [{"role": "system", "content": system_content}]
-            for msg in context_messages:
-                if isinstance(msg, dict) and "role" in msg and "content" in msg:
-                    final_messages.append({"role": msg["role"], "content": msg["content"]})
-
-            # Call Groq API
-            response = self.client.chat.completions.create(
-                model=Config.SMART_MODEL,
-                messages=final_messages,
-                temperature=Config.TEMPERATURE,
-                max_tokens=Config.MAX_TOKENS
-            )
-            
-            ai_text = response.choices[0].message.content
-            result['response'] = ai_text
-            result['agent_used'] = 'AI'
-
-            # 3. Voice Generation (If enabled)
-            if use_voice and ai_text:
-                audio_path = self.voice.text_to_speech(ai_text, lang='en')
-                if audio_path:
-                    self.voice.play_audio(audio_path)
-                    result['audio_path'] = audio_path
-
-            # 4. Save to Memory
-            self.memory.save_interaction(user_message, ai_text)
-            
->>>>>>> 649d5aef0355dffa597cb4cfaa2f8d7bfed2e668
             result['response_time'] = round(time.time() - start_time, 2)
             return result
             
         except Exception as e:
             return {
-<<<<<<< HEAD
                 'response': f"⚠️ System Error: {str(e)}",
                 'audio_path': None,
                 'agent_used': 'Error',
@@ -255,50 +183,10 @@ class AIAgentSystem:
     
     def generate_chat_title(self, first_message: str) -> str:
         """Generate a short title for the chat"""
-=======
-                'response': f"⚠️ System Error: {str(e)}", 
-                'audio_path': None, 
-                'agent_used': 'Error', 
-                'response_time': 0
-            }
-
-    def _check_tools(self, msg: str) -> str:
-        """Strict tool detection to prevent false triggers"""
-        m = msg.lower().strip()
-        
-        # Time & Date
-        time_patterns = ["what time", "time kya", "kitne baje", "current time", "aaj ki date", "what's the time"]
-        if any(pattern in m for pattern in time_patterns):
-            return self.tools.get_time_date()
-        
-        # Weather (Only if explicitly asked)
-        weather_patterns = ["weather", "mausam", "temperature outside", "baahar ka mausam", "is it raining"]
-        if any(pattern in m for pattern in weather_patterns):
-            # Default to Delhi, or we could add city extraction logic later
-            return self.tools.get_weather("Delhi")
-            
-        # News
-        if "news" in m and any(w in m for w in ["latest", "today", "headlines"]):
-            return self.tools.get_news()
-            
-        # Calculator (Simple math)
-        calc_patterns = ["calculate", "calc", "solve", "kitna hoga"]
-        if any(pattern in m for pattern in calc_patterns):
-            # Extract numbers and operators
-            expr = re.findall(r'[\d\+\-\*\/\.\(\)]+', msg)
-            if expr:
-                return self.tools.calculate("".join(expr))
-        
-        return ""
-
-    def generate_chat_title(self, first_message: str) -> str:
-        """Generates a short title for the chat"""
->>>>>>> 649d5aef0355dffa597cb4cfaa2f8d7bfed2e668
         try:
             response = self.client.chat.completions.create(
                 model=Config.FAST_MODEL,
                 messages=[
-<<<<<<< HEAD
                     {
                         "role": "system",
                         "content": "Generate a short 3-5 word title for this conversation. Return ONLY the title, no quotes."
@@ -398,7 +286,7 @@ class AIAgentSystem:
     def _get_ai_response(self, messages: list, context: str, model: str, 
                          custom_prompt: str = None) -> str:
         """Get streaming AI response from Groq"""
-        system_content = custom_prompt if custom_prompt else Config.SYSTEM_PROMPT
+        system_content = custom_prompt if custom_prompt else Config.MODES["butler"]["prompt"]
         
         # Add memory context if available
         if context:
@@ -448,16 +336,3 @@ class AIAgentSystem:
             'voice_enabled': self.voice is not None,
             'planner_enabled': self.planner is not None
         }
-=======
-                    {"role": "system", "content": "Generate a short 3-5 word title for this conversation. Return ONLY the title."},
-                    {"role": "user", "content": first_message}
-                ],
-                max_tokens=20
-            )
-            title = response.choices[0].message.content.strip().replace('"', '')
-            return title if title else "New Chat"
-        except:
-            return first_message.split()[:4] if len(first_message.split()) > 4 else "New Chat"
-
-            
->>>>>>> 649d5aef0355dffa597cb4cfaa2f8d7bfed2e668
