@@ -292,37 +292,31 @@ class AIAgentSystem:
         if context:
             system_content += f"\n\nRelevant Memory:\n{context[:500]}"
         
-        # Clean messages
-        clean_messages = [
-            {"role": msg["role"], "content": msg["content"]}
-            for msg in messages
-            if isinstance(msg, dict) and "role" in msg
-        ]
+        # Clean messages - ensure proper format
+        clean_messages = []
+        for msg in messages:
+            if isinstance(msg, dict) and "role" in msg and "content" in msg:
+                clean_messages.append({
+                    "role": msg["role"],
+                    "content": msg["content"]
+                })
         
-        final_msgs = [{"role": "system", "content": system_content}, *clean_messages]
+        final_msgs = [{"role": "system", "content": system_content}] + clean_messages
         
         try:
-            stream = self.client.chat.completions.create(
+            # Non-streaming for better reliability
+            response = self.client.chat.completions.create(
                 model=model,
                 messages=final_msgs,
                 temperature=Config.TEMPERATURE,
-                max_tokens=Config.MAX_TOKENS,
-                stream=True
+                max_tokens=Config.MAX_TOKENS
             )
             
-            full_response = ""
-            placeholder = st.empty()
-            
-            for chunk in stream:
-                if chunk.choices[0].delta.content:
-                    full_response += chunk.choices[0].delta.content
-                    placeholder.markdown(full_response + "▌")
-            
-            placeholder.markdown(full_response)
+            full_response = response.choices[0].message.content
             return full_response
             
         except Exception as e:
-            error_msg = f"⚠️ API Error: {str(e)}"
+            error_msg = f"️ API Error: {str(e)}"
             print(error_msg)
             return error_msg
     

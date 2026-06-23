@@ -22,7 +22,7 @@ class ChatManager:
         if user_path:
             self.base_path = Path(user_path)
         else:
-            self.base_path = Path(os.getcwd())
+            self.base_path = Path(os.getcwd()) / "user_data"
         
         # Create necessary directories
         self.base_path.mkdir(parents=True, exist_ok=True)
@@ -38,13 +38,19 @@ class ChatManager:
         # Default folders if none exist
         if not self.folders:
             self._create_default_folders()
+            
+        # Ensure at least one chat exists
+        if not self.chats:
+            self.create_new_chat("👑 Welcome Session")
     
     def _load_chats(self) -> Dict[str, Any]:
         """Load chats from JSON file"""
         try:
             if self.chats_db_path.exists():
                 with open(self.chats_db_path, 'r', encoding='utf-8') as f:
-                    return json.load(f)
+                    data = json.load(f)
+                    if isinstance(data, dict):
+                        return data
         except Exception as e:
             print(f"Error loading chats: {e}")
         return {}
@@ -52,6 +58,9 @@ class ChatManager:
     def _save_chats(self):
         """Save chats to JSON file"""
         try:
+            # Ensure directory exists
+            self.chats_db_path.parent.mkdir(parents=True, exist_ok=True)
+            
             with open(self.chats_db_path, 'w', encoding='utf-8') as f:
                 json.dump(self.chats, f, indent=2, ensure_ascii=False)
         except Exception as e:
@@ -62,7 +71,9 @@ class ChatManager:
         try:
             if self.folders_db_path.exists():
                 with open(self.folders_db_path, 'r', encoding='utf-8') as f:
-                    return json.load(f)
+                    data = json.load(f)
+                    if isinstance(data, dict):
+                        return data
         except Exception as e:
             print(f"Error loading folders: {e}")
         return {}
@@ -70,6 +81,9 @@ class ChatManager:
     def _save_folders(self):
         """Save folder structure to JSON file"""
         try:
+            # Ensure directory exists
+            self.folders_db_path.parent.mkdir(parents=True, exist_ok=True)
+            
             with open(self.folders_db_path, 'w', encoding='utf-8') as f:
                 json.dump(self.folders, f, indent=2, ensure_ascii=False)
         except Exception as e:
@@ -139,7 +153,8 @@ class ChatManager:
         folder_id: str = "all"
     ) -> str:
         """Create a new chat"""
-        chat_id = f"chat_{int(datetime.now().timestamp())}_{len(self.chats)}"
+        # Generate unique chat ID
+        chat_id = f"chat_{int(datetime.now().timestamp() * 1000000)}_{uuid.uuid4().hex[:8]}"
         
         self.chats[chat_id] = {
             "id": chat_id,
@@ -216,29 +231,40 @@ class ChatManager:
     
     def add_message(self, chat_id: str, role: str, content: str) -> bool:
         """Add message to chat"""
-        if chat_id in self.chats:
-            message = {
-                "role": role,
-                "content": content,
-                "timestamp": datetime.now().isoformat(),
-                "tokens": len(content.split())
-            }
+        if chat_id not in self.chats:
+            print(f"Chat {chat_id} not found!")
+            return False
             
-            self.chats[chat_id]["messages"].append(message)
-            self.chats[chat_id]["updated"] = datetime.now().isoformat()
+        message = {
+            "role": role,
+            "content": content,
+            "timestamp": datetime.now().isoformat(),
+            "tokens": len(content.split())
+        }
+        
+        self.chats[chat_id]["messages"].append(message)
+        self.chats[chat_id]["updated"] = datetime.now().isoformat()
+        
+        # Update metadata
+        self.chats[chat_id]["metadata"]["message_count"] += 1
+        self.chats[chat_id]["metadata"]["word_count"] += message["tokens"]
+        self.chats[chat_id]["metadata"]["last_activity"] = datetime.now().isoformat()
+        
+        # Save immediately
+        self._save_chats()
+        
+        # Verify save
+        if not self.chats[chat_id]["messages"]:
+            print(f"Warning: Message not saved for chat {chat_id}")
+            return False
             
-            # Update metadata
-            self.chats[chat_id]["metadata"]["message_count"] += 1
-            self.chats[chat_id]["metadata"]["word_count"] += message["tokens"]
-            self.chats[chat_id]["metadata"]["last_activity"] = datetime.now().isoformat()
-            
-            self._save_chats()
-            return True
-        return False
+        return True
     
     def get_chat_messages(self, chat_id: str) -> List[Dict[str, Any]]:
         """Get all messages from a chat"""
         if chat_id in self.chats:
+            # Reload from file to ensure we have latest data
+            self.chats = self._load_chats()
             return self.chats[chat_id].get("messages", [])
         return []
     
@@ -248,7 +274,8 @@ class ChatManager:
             chat = self.chats[chat_id].copy()
             # Don't return full messages for info
             chat["message_count"] = len(chat.get("messages", []))
-            del chat["messages"]
+            if "messages" in chat:
+                del chat["messages"]
             return chat
         return None
     

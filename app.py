@@ -11,19 +11,26 @@ from agent_core import AIAgentSystem
 from chat_manager import ChatManager
 
 # ========================================
-# 🎨 GLOBAL THEME VARIABLES (Fixed Scope Issue)
+# 🎨 GLOBAL THEME VARIABLES (FIXED SCOPE)
 # ========================================
-# Initialize with default dark theme values so they are available globally
 greeting_bg = 'linear-gradient(135deg, rgba(30,30,40,0.6), rgba(20,20,30,0.8))'
 greeting_text = '#888'
 greeting_subtext = '#aaa'
 footer_color = '#999'
+persona_options = {
+    "default": "🤖 Default",
+    "professor": "🎓 Professor",
+    "business": "💼 Business",
+    "friendly": "😎 Friendly"
+}
 
+# ========================================
+# 🎨 ULTIMATE UI WITH ALL FEATURES
+# ========================================
 def render_ultimate_ui(active_mode, matrix_mode=False, theme_mode="dark", current_theme="royal"):
     """Render ultimate UI with all enhancements"""
     global greeting_bg, greeting_text, greeting_subtext, footer_color
     
-    # Theme definitions (Dark & Light modes)
     themes = {
         "dark": {
             "royal": {
@@ -98,7 +105,6 @@ def render_ultimate_ui(active_mode, matrix_mode=False, theme_mode="dark", curren
     else:
         bg_color, primary_color, text_color = t['bg'], t['primary'], t['text']
     
-    # Update global variables based on current theme
     secondary_color = t['secondary']
     light_bg = '#ffffff' if theme_mode == 'light' else '#000000'
     sidebar_bg_start = 'rgba(255,255,255,0.98)' if theme_mode == 'light' else 'rgba(20,20,30,0.98)'
@@ -121,189 +127,71 @@ def render_ultimate_ui(active_mode, matrix_mode=False, theme_mode="dark", curren
     st.markdown(f"""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;600;800&family=Fira+Code:wght@400;600&display=swap');
-        
         * {{ cursor: none; }}
-        
-        .custom-cursor {{
-            position: fixed; width: 25px; height: 25px; border: 3px solid {primary_color};
-            border-radius: 50%; pointer-events: none; z-index: 99999; transition: all 0.1s ease;
-            box-shadow: 0 0 30px {primary_color}80, 0 0 60px {primary_color}40;
-            background: {primary_color}20; backdrop-filter: blur(5px);
-        }}
-        
-        .cursor-trail {{
-            position: fixed; width: 10px; height: 10px; background: {primary_color};
-            border-radius: 50%; pointer-events: none; z-index: 99998; opacity: 0.6;
-            box-shadow: 0 0 15px {primary_color};
-        }}
-        
-        .main {{ 
-            background: linear-gradient(135deg, {bg_color}, {light_bg}) !important; 
-            font-family: 'Inter', sans-serif; color: {text_color} !important; overflow-x: hidden;
-        }}
-        
-        section[data-testid="stSidebar"] {{
-            background: linear-gradient(180deg, {sidebar_bg_start}, {sidebar_bg_end}) !important;
-            backdrop-filter: blur(30px) saturate(180%);
-            border-right: 2px solid {primary_color}40 !important;
-            box-shadow: 5px 0 30px {primary_color}20 !important;
-            max-height: 100vh; overflow-y: auto !important; color: {text_color} !important;
-        }}
-        
+        .custom-cursor {{ position: fixed; width: 25px; height: 25px; border: 3px solid {primary_color}; border-radius: 50%; pointer-events: none; z-index: 99999; transition: all 0.1s ease; box-shadow: 0 0 30px {primary_color}80, 0 0 60px {primary_color}40; background: {primary_color}20; backdrop-filter: blur(5px); }}
+        .cursor-trail {{ position: fixed; width: 10px; height: 10px; background: {primary_color}; border-radius: 50%; pointer-events: none; z-index: 99998; opacity: 0.6; box-shadow: 0 0 15px {primary_color}; }}
+        .main {{ background: linear-gradient(135deg, {bg_color}, {light_bg}) !important; font-family: 'Inter', sans-serif; color: {text_color} !important; overflow-x: hidden; }}
+        section[data-testid="stSidebar"] {{ background: linear-gradient(180deg, {sidebar_bg_start}, {sidebar_bg_end}) !important; backdrop-filter: blur(30px) saturate(180%); border-right: 2px solid {primary_color}40 !important; box-shadow: 5px 0 30px {primary_color}20 !important; max-height: 100vh; overflow-y: auto !important; color: {text_color} !important; }}
         #particles-js {{ position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }}
-        
-        @keyframes bootFade {{ 
-            0% {{ opacity: 1; transform: scale(1); }} 
-            80% {{ opacity: 1; transform: scale(1.05); }} 
-            100% {{ opacity: 0; visibility: hidden; transform: scale(1.1); }} 
-        }}
-        
-        #boot-overlay {{
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: radial-gradient(circle at center, #1a1a2e 0%, #000000 100%);
-            z-index: 99999; display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            animation: bootFade 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; pointer-events: none;
-        }}
-        
-        .boot-crown {{ 
-            font-size: 5rem; margin-bottom: 30px; 
-            animation: crownFloat 2s ease-in-out infinite, crownGlow 2s ease-in-out infinite; 
-            color: {primary_color}; text-shadow: 0 0 50px {primary_color}80;
-        }}
-        
+        @keyframes bootFade {{ 0% {{ opacity: 1; transform: scale(1); }} 80% {{ opacity: 1; transform: scale(1.05); }} 100% {{ opacity: 0; visibility: hidden; transform: scale(1.1); }} }}
+        #boot-overlay {{ position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle at center, #1a1a2e 0%, #000000 100%); z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; animation: bootFade 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; pointer-events: none; }}
+        .boot-crown {{ font-size: 5rem; margin-bottom: 30px; animation: crownFloat 2s ease-in-out infinite, crownGlow 2s ease-in-out infinite; color: {primary_color}; text-shadow: 0 0 50px {primary_color}80; }}
         @keyframes crownFloat {{ 0%, 100% {{ transform: translateY(0) rotate(0deg); }} 50% {{ transform: translateY(-20px) rotate(5deg); }} }}
         @keyframes crownGlow {{ 0%, 100% {{ filter: brightness(1); }} 50% {{ filter: brightness(1.5); }} }}
-        
-        .boot-text {{ 
-            font-size: 2rem; color: {primary_color}; font-family: 'Playfair Display', serif; 
-            letter-spacing: 5px; animation: textGlow 2s ease-in-out infinite; text-shadow: 0 0 30px {primary_color}80;
-        }}
-        
+        .boot-text {{ font-size: 2rem; color: {primary_color}; font-family: 'Playfair Display', serif; letter-spacing: 5px; animation: textGlow 2s ease-in-out infinite; text-shadow: 0 0 30px {primary_color}80; }}
         @keyframes textGlow {{ 0%, 100% {{ text-shadow: 0 0 30px {primary_color}80; }} 50% {{ text-shadow: 0 0 60px {primary_color}80, 0 0 80px {primary_color}80; }} }}
-        
         .boot-sub {{ font-size: 1rem; color: #888; margin-top: 15px; letter-spacing: 3px; animation: fadeInUp 1s ease-out; }}
         @keyframes fadeInUp {{ from {{ opacity: 0; transform: translateY(30px); }} to {{ opacity: 1; transform: translateY(0); }} }}
-        
         .progress-bar {{ width: 350px; height: 4px; background: #333; margin-top: 40px; border-radius: 4px; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.5); }}
-        
-        .progress-fill {{ 
-            height: 100%; background: linear-gradient(90deg, {primary_color}, {secondary_color}, {primary_color});
-            background-size: 200% 100%; box-shadow: 0 0 30px {primary_color}80; 
-            animation: load 2s ease-out forwards, gradientShift 3s ease-in-out infinite;
-        }}
-        
+        .progress-fill {{ height: 100%; background: linear-gradient(90deg, {primary_color}, {secondary_color}, {primary_color}); background-size: 200% 100%; box-shadow: 0 0 30px {primary_color}80; animation: load 2s ease-out forwards, gradientShift 3s ease-in-out infinite; }}
         @keyframes load {{ 0% {{ width: 0%; }} 100% {{ width: 100%; }} }}
         @keyframes gradientShift {{ 0% {{ background-position: 0% 50%; }} 50% {{ background-position: 100% 50%; }} 100% {{ background-position: 0% 50%; }} }}
-        
         #matrix-canvas {{ position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9998; pointer-events: none; opacity: 0.3; }}
-        
-        #royal-grid {{
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: radial-gradient(circle at 20% 50%, {primary_color}10 0%, transparent 50%),
-                              radial-gradient(circle at 80% 80%, {secondary_color}10 0%, transparent 50%),
-                              radial-gradient(circle at 40% 20%, {primary_color}08 0%, transparent 40%);
-            pointer-events: none; z-index: -1; animation: gridPulse 4s ease-in-out infinite;
-        }}
+        #royal-grid {{ position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: radial-gradient(circle at 20% 50%, {primary_color}10 0%, transparent 50%), radial-gradient(circle at 80% 80%, {secondary_color}10 0%, transparent 50%), radial-gradient(circle at 40% 20%, {primary_color}08 0%, transparent 40%); pointer-events: none; z-index: -1; animation: gridPulse 4s ease-in-out infinite; }}
         @keyframes gridPulse {{ 0%, 100% {{ opacity: 0.5; }} 50% {{ opacity: 1; }} }}
-        
-        .stChatMessage {{
-            background: {t['card_bg']} !important; border: 1px solid {primary_color}30 !important;
-            border-radius: 20px !important; padding: 25px !important; margin-bottom: 20px !important;
-            backdrop-filter: blur(20px) saturate(180%);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 40px {primary_color}15 !important;
-            animation: messageSlide 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: {text_color} !important;
-        }}
+        .stChatMessage {{ background: {t['card_bg']} !important; border: 1px solid {primary_color}30 !important; border-radius: 20px !important; padding: 25px !important; margin-bottom: 20px !important; backdrop-filter: blur(20px) saturate(180%); box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 40px {primary_color}15 !important; animation: messageSlide 0.5s cubic-bezier(0.4, 0, 0.2, 1); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: {text_color} !important; }}
         .stChatMessage:hover {{ border-color: {primary_color}60 !important; box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 60px {primary_color}25 !important; transform: translateY(-2px); }}
         @keyframes messageSlide {{ from {{ opacity: 0; transform: translateY(30px) scale(0.95); }} to {{ opacity: 1; transform: translateY(0) scale(1); }} }}
-        
-        div[data-baseweb="base-input"] > div, .stTextInput > div > div > input, .stTextArea > div > div > textarea {{
-            background: {input_bg} !important; border: 2px solid {primary_color}40 !important;
-            border-radius: 14px !important; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(10px); color: {text_color} !important;
-        }}
-        div[data-baseweb="base-input"]:focus-within > div, .stTextInput > div > div > input:focus, .stTextArea > div > div > textarea:focus {{
-            border-color: {primary_color} !important; box-shadow: 0 0 40px {primary_color}40 !important; transform: translateY(-2px);
-        }}
-        
-        .stButton > button {{
-            background: linear-gradient(135deg, {primary_color}, {secondary_color}) !important;
-            color: {btn_color} !important; border: none !important; border-radius: 12px !important;
-            font-weight: 700 !important; padding: 12px 24px !important;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            box-shadow: 0 4px 20px {primary_color}50 !important; position: relative; overflow: hidden;
-        }}
+        div[data-baseweb="base-input"] > div, .stTextInput > div > div > input, .stTextArea > div > div > textarea {{ background: {input_bg} !important; border: 2px solid {primary_color}40 !important; border-radius: 14px !important; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(10px); color: {text_color} !important; }}
+        div[data-baseweb="base-input"]:focus-within > div, .stTextInput > div > div > input:focus, .stTextArea > div > div > textarea:focus {{ border-color: {primary_color} !important; box-shadow: 0 0 40px {primary_color}40 !important; transform: translateY(-2px); }}
+        .stButton > button {{ background: linear-gradient(135deg, {primary_color}, {secondary_color}) !important; color: {btn_color} !important; border: none !important; border-radius: 12px !important; font-weight: 700 !important; padding: 12px 24px !important; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important; box-shadow: 0 4px 20px {primary_color}50 !important; position: relative; overflow: hidden; }}
         .stButton > button::before {{ content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-radius: 50%; background: rgba(255,255,255,0.3); transform: translate(-50%, -50%); transition: width 0.6s, height 0.6s; }}
         .stButton > button:hover::before {{ width: 300px; height: 300px; }}
         .stButton > button:hover {{ transform: translateY(-3px) scale(1.02) !important; box-shadow: 0 8px 35px {primary_color}70 !important; }}
         .stButton > button:active {{ transform: translateY(-1px) scale(0.98) !important; }}
-        
-        div[data-testid="stSidebar"] button[kind="secondary"] {{
-            height: 90px !important; background: {sidebar_btn_bg} !important;
-            border: 2px solid {primary_color}20 !important; border-radius: 16px !important;
-            display: flex !important; flex-direction: column !important; justify-content: center !important;
-            align-items: center !important; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            color: {text_color} !important; font-weight: 700 !important; margin-bottom: 12px !important;
-            backdrop-filter: blur(10px); position: relative; overflow: hidden;
-        }}
+        div[data-testid="stSidebar"] button[kind="secondary"] {{ height: 90px !important; background: {sidebar_btn_bg} !important; border: 2px solid {primary_color}20 !important; border-radius: 16px !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important; color: {text_color} !important; font-weight: 700 !important; margin-bottom: 12px !important; backdrop-filter: blur(10px); position: relative; overflow: hidden; }}
         div[data-testid="stSidebar"] button[kind="secondary"]::before {{ content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, {primary_color}30, transparent); transition: left 0.5s; }}
         div[data-testid="stSidebar"] button[kind="secondary"]:hover::before {{ left: 100%; }}
         div[data-testid="stSidebar"] button[kind="secondary"]:hover {{ transform: translateY(-5px) scale(1.03) !important; box-shadow: 0 10px 40px {primary_color}50 !important; border-color: {primary_color} !important; background: {sidebar_btn_hover} !important; }}
-        
-        .agent-badge {{
-            background: linear-gradient(135deg, {primary_color}25, {secondary_color}25);
-            color: {primary_color}; padding: 10px 20px; border-radius: 25px; font-size: 0.9em;
-            display: inline-block; margin-bottom: 15px; border: 2px solid {primary_color}60;
-            box-shadow: 0 0 30px {primary_color}40, inset 0 0 20px {primary_color}20;
-            font-weight: 700; letter-spacing: 1px; animation: badgePulse 2s ease-in-out infinite; backdrop-filter: blur(10px);
-        }}
+        .agent-badge {{ background: linear-gradient(135deg, {primary_color}25, {secondary_color}25); color: {primary_color}; padding: 10px 20px; border-radius: 25px; font-size: 0.9em; display: inline-block; margin-bottom: 15px; border: 2px solid {primary_color}60; box-shadow: 0 0 30px {primary_color}40, inset 0 0 20px {primary_color}20; font-weight: 700; letter-spacing: 1px; animation: badgePulse 2s ease-in-out infinite; backdrop-filter: blur(10px); }}
         @keyframes badgePulse {{ 0%, 100% {{ box-shadow: 0 0 30px {primary_color}40, inset 0 0 20px {primary_color}20; }} 50% {{ box-shadow: 0 0 50px {primary_color}60, inset 0 0 30px {primary_color}30; }} }}
-        
         .stat-card {{ background: {t['card_bg']}; border: 2px solid {primary_color}30; border-radius: 16px; padding: 20px; margin: 15px 0; backdrop-filter: blur(20px); text-align: center; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }}
         .stat-card:hover {{ transform: translateY(-5px) scale(1.02); border-color: {primary_color}60; box-shadow: 0 12px 48px {primary_color}30; }}
         .stat-value {{ font-size: 2rem; font-weight: 800; color: {primary_color}; text-shadow: 0 0 20px {primary_color}80; animation: statGlow 2s ease-in-out infinite; }}
         @keyframes statGlow {{ 0%, 100% {{ text-shadow: 0 0 20px {primary_color}80; }} 50% {{ text-shadow: 0 0 40px {primary_color}80, 0 0 60px {primary_color}80; }} }}
         .stat-label {{ font-size: 0.85rem; color: {stat_label_color}; text-transform: uppercase; letter-spacing: 2px; margin-top: 8px; }}
-        
-        .toast {{
-            position: fixed; bottom: 120px; right: 40px;
-            background: linear-gradient(135deg, {primary_color}, {secondary_color});
-            color: {toast_color}; padding: 18px 30px; border-radius: 14px; font-weight: 700; 
-            box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 60px {primary_color}60;
-            z-index: 10000; animation: toastSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1), toastFloat 3s ease-in-out infinite;
-            backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.2);
-        }}
+        .toast {{ position: fixed; bottom: 120px; right: 40px; background: linear-gradient(135deg, {primary_color}, {secondary_color}); color: {toast_color}; padding: 18px 30px; border-radius: 14px; font-weight: 700; box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 60px {primary_color}60; z-index: 10000; animation: toastSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1), toastFloat 3s ease-in-out infinite; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.2); }}
         @keyframes toastSlideIn {{ from {{ transform: translateX(150%) rotate(5deg); opacity: 0; }} to {{ transform: translateX(0) rotate(0deg); opacity: 1; }} }}
         @keyframes toastFloat {{ 0%, 100% {{ transform: translateY(0); }} 50% {{ transform: translateY(-5px); }} }}
-        
         ::-webkit-scrollbar {{ width: 10px; }}
         ::-webkit-scrollbar-track {{ background: {scrollbar_track}; border-radius: 10px; }}
         ::-webkit-scrollbar-thumb {{ background: linear-gradient(180deg, {primary_color}, {secondary_color}); border-radius: 10px; box-shadow: 0 0 20px {primary_color}80; }}
         ::-webkit-scrollbar-thumb:hover {{ background: {primary_color}; box-shadow: 0 0 30px {primary_color}80; }}
-        
         #MainMenu, footer, header {{ visibility: hidden; display: none !important; }}
-        
         .ticker-card {{ background: {t['card_bg']}; border: 2px solid {primary_color}30; border-radius: 14px; padding: 15px; margin: 10px 0; display: flex; justify-content: space-between; align-items: center; backdrop-filter: blur(20px); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }}
         .ticker-card:hover {{ transform: translateX(5px); border-color: {primary_color}60; box-shadow: 0 6px 30px {primary_color}30; }}
         .ticker-symbol {{ font-weight: 700; color: {primary_color}; font-size: 1rem; text-shadow: 0 0 10px {primary_color}80; }}
         .ticker-price {{ font-size: 1.2rem; font-weight: 800; color: {secondary_color}; text-shadow: 0 0 15px {primary_color}80; }}
-        
         .image-gen-box {{ background: {t['card_bg']}; border: 2px solid {primary_color}30; border-radius: 16px; padding: 20px; margin: 15px 0; backdrop-filter: blur(20px); box-shadow: 0 8px 32px rgba(0,0,0,0.3); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }}
         .image-gen-box:hover {{ border-color: {primary_color}60; box-shadow: 0 12px 48px {primary_color}30; }}
-        
         div[data-baseweb="select"] > div {{ background: {select_bg} !important; border: 2px solid {primary_color}40 !important; border-radius: 12px !important; backdrop-filter: blur(10px); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: {text_color} !important; }}
         div[data-baseweb="select"]:focus-within > div {{ border-color: {primary_color} !important; box-shadow: 0 0 30px {primary_color}30 !important; transform: translateY(-2px); }}
-        
         .search-box {{ position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: {t['card_bg']}; border: 3px solid {primary_color}; padding: 30px; border-radius: 20px; box-shadow: 0 0 100px {primary_color}80; z-index: 99999; min-width: 500px; backdrop-filter: blur(20px); display: none; }}
         .search-box.active {{ display: block; animation: searchBoxSlide 0.3s ease-out; }}
         @keyframes searchBoxSlide {{ from {{ opacity: 0; transform: translate(-50%, -60%); }} to {{ opacity: 1; transform: translate(-50%, -50%); }} }}
-        
         .rename-input {{ background: {rename_bg} !important; border: 2px solid {primary_color} !important; padding: 10px !important; border-radius: 8px !important; color: {text_color} !important; width: 100% !important; }}
-        
         .suggestion-chip {{ display: inline-block; background: {primary_color}20; border: 2px solid {primary_color}40; padding: 8px 16px; border-radius: 20px; margin: 5px; cursor: pointer; transition: all 0.3s ease; color: {primary_color}; font-size: 0.9em; }}
         .suggestion-chip:hover {{ background: {primary_color}40; transform: translateY(-2px); box-shadow: 0 4px 15px {primary_color}40; }}
-        
         .folder-item {{ display: flex; align-items: center; padding: 8px 12px; margin: 4px 0; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; background: {primary_color}10; border: 1px solid {primary_color}20; }}
         .folder-item:hover {{ background: {primary_color}20; transform: translateX(5px); }}
         .folder-icon {{ margin-right: 8px; font-size: 1.2em; }}
@@ -324,145 +212,77 @@ def render_ultimate_ui(active_mode, matrix_mode=False, theme_mode="dark", curren
     
     <script>
         const cursor = document.getElementById('customCursor');
-        let mouseX = 0, mouseY = 0;
-        let cursorX = 0, cursorY = 0;
+        let mouseX = 0, mouseY = 0, cursorX = 0, cursorY = 0;
         document.addEventListener('mousemove', (e) => {{ mouseX = e.clientX; mouseY = e.clientY; }});
-        function animateCursor() {{
-            cursorX += (mouseX - cursorX) * 0.1;
-            cursorY += (mouseY - cursorY) * 0.1;
-            cursor.style.left = cursorX - 12.5 + 'px';
-            cursor.style.top = cursorY - 12.5 + 'px';
-            requestAnimationFrame(animateCursor);
-        }}
+        function animateCursor() {{ cursorX += (mouseX - cursorX) * 0.1; cursorY += (mouseY - cursorY) * 0.1; cursor.style.left = cursorX - 12.5 + 'px'; cursor.style.top = cursorY - 12.5 + 'px'; requestAnimationFrame(animateCursor); }}
         animateCursor();
         const trailElements = [];
-        for (let i = 0; i < 10; i++) {{
-            const trail = document.createElement('div');
-            trail.className = 'cursor-trail';
-            document.body.appendChild(trail);
-            trailElements.push(trail);
-        }}
-        function animateTrail() {{
-            trailElements.forEach((trail, index) => {{
-                const prev = index === 0 ? {{ x: mouseX, y: mouseY }} : {{
-                    x: parseFloat(trailElements[index - 1].style.left) + 5 || mouseX,
-                    y: parseFloat(trailElements[index - 1].style.top) + 5 || mouseY
-                }};
-                trail.style.left = prev.x - 5 + 'px';
-                trail.style.top = prev.y - 5 + 'px';
-                trail.style.opacity = 0.6 - (index * 0.06);
-            }});
-            requestAnimationFrame(animateTrail);
-        }}
+        for (let i = 0; i < 10; i++) {{ const trail = document.createElement('div'); trail.className = 'cursor-trail'; document.body.appendChild(trail); trailElements.push(trail); }}
+        function animateTrail() {{ trailElements.forEach((trail, index) => {{ const prev = index === 0 ? {{ x: mouseX, y: mouseY }} : {{ x: parseFloat(trailElements[index - 1].style.left) + 5 || mouseX, y: parseFloat(trailElements[index - 1].style.top) + 5 || mouseY }}; trail.style.left = prev.x - 5 + 'px'; trail.style.top = prev.y - 5 + 'px'; trail.style.opacity = 0.6 - (index * 0.06); }}); requestAnimationFrame(animateTrail); }}
         animateTrail();
-        if ('ontouchstart' in window) {{
-            cursor.style.display = 'none';
-            document.querySelectorAll('.cursor-trail').forEach(trail => trail.style.display = 'none');
-            document.body.style.cursor = 'auto';
-        }}
+        if ('ontouchstart' in window) {{ cursor.style.display = 'none'; document.querySelectorAll('.cursor-trail').forEach(trail => trail.style.display = 'none'); document.body.style.cursor = 'auto'; }}
         const particlesContainer = document.getElementById('particles-js');
-        for (let i = 0; i < 50; i++) {{
-            const particle = document.createElement('div');
-            const duration = 10 + Math.random() * 10;
-            const delay = Math.random() * 5;
-            const size = 2 + Math.random() * 4;
-            const opacity = 0.2 + Math.random() * 0.5;
-            particle.style.position = 'absolute';
-            particle.style.width = size + 'px';
-            particle.style.height = size + 'px';
-            particle.style.background = '{primary_color}';
-            particle.style.borderRadius = '50%';
-            particle.style.left = Math.random() * 100 + '%';
-            particle.style.top = Math.random() * 100 + '%';
-            particle.style.opacity = opacity;
-            particle.style.pointerEvents = 'none';
-            particle.style.boxShadow = `0 0 20px {primary_color}`;
-            particle.style.animation = `particleFloat ${{duration}}s ease-in-out infinite`;
-            particle.style.animationDelay = `${{delay}}s`;
-            particlesContainer.appendChild(particle);
-        }}
+        for (let i = 0; i < 50; i++) {{ const particle = document.createElement('div'); const duration = 10 + Math.random() * 10; const delay = Math.random() * 5; const size = 2 + Math.random() * 4; const opacity = 0.2 + Math.random() * 0.5; particle.style.position = 'absolute'; particle.style.width = size + 'px'; particle.style.height = size + 'px'; particle.style.background = '{primary_color}'; particle.style.borderRadius = '50%'; particle.style.left = Math.random() * 100 + '%'; particle.style.top = Math.random() * 100 + '%'; particle.style.opacity = opacity; particle.style.pointerEvents = 'none'; particle.style.boxShadow = `0 0 20px {primary_color}`; particle.style.animation = `particleFloat ${{duration}}s ease-in-out infinite`; particle.style.animationDelay = `${{delay}}s`; particlesContainer.appendChild(particle); }}
         const style = document.createElement('style');
-        style.textContent = `
-            @keyframes particleFloat {{
-                0%, 100% {{ transform: translateY(0) translateX(0); }}
-                25% {{ transform: translateY(-30px) translateX(15px); }}
-                50% {{ transform: translateY(-15px) translateX(-15px); }}
-                75% {{ transform: translateY(-45px) translateX(10px); }}
-            }}
-        `;
+        style.textContent = `@keyframes particleFloat {{ 0%, 100% {{ transform: translateY(0) translateX(0); }} 25% {{ transform: translateY(-30px) translateX(15px); }} 50% {{ transform: translateY(-15px) translateX(-15px); }} 75% {{ transform: translateY(-45px) translateX(10px); }} }}`;
         document.head.appendChild(style);
         const canvas = document.getElementById('matrix-canvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*';
-        const fontSize = 14;
-        const columns = canvas.width / fontSize;
-        const drops = Array(Math.floor(columns)).fill(1);
-        let matrixActive = false;
-        function drawMatrix() {{
-            if (!matrixActive) {{ ctx.clearRect(0, 0, canvas.width, canvas.height); return; }}
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#0F0';
-            ctx.font = fontSize + 'px monospace';
-            for (let i = 0; i < drops.length; i++) {{
-                const text = chars[Math.floor(Math.random() * chars.length)];
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-                drops[i]++;
-            }}
-        }}
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*'; const fontSize = 14; const columns = canvas.width / fontSize; const drops = Array(Math.floor(columns)).fill(1); let matrixActive = false;
+        function drawMatrix() {{ if (!matrixActive) {{ ctx.clearRect(0, 0, canvas.width, canvas.height); return; }} ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#0F0'; ctx.font = fontSize + 'px monospace'; for (let i = 0; i < drops.length; i++) {{ const text = chars[Math.floor(Math.random() * chars.length)]; ctx.fillText(text, i * fontSize, drops[i] * fontSize); if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0; drops[i]++; }} }}
         setInterval(drawMatrix, 35);
         window.addEventListener('message', (event) => {{ if (event.data.type === 'matrix_toggle') matrixActive = event.data.active; }});
         window.addEventListener('resize', () => {{ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }});
-        document.addEventListener('keydown', (e) => {{
-            if ((e.ctrlKey || e.metaKey) && e.key === 'f') {{ e.preventDefault(); window.parent.postMessage({{type: 'open_search'}}, '*'); }}
-            if ((e.ctrlKey || e.metaKey) && e.key === 'n') {{ e.preventDefault(); window.parent.postMessage({{type: 'new_chat'}}, '*'); }}
-        }});
+        document.addEventListener('keydown', (e) => {{ if ((e.ctrlKey || e.metaKey) && e.key === 'f') {{ e.preventDefault(); window.parent.postMessage({{type: 'open_search'}}, '*'); }} if ((e.ctrlKey || e.metaKey) && e.key === 'n') {{ e.preventDefault(); window.parent.postMessage({{type: 'new_chat'}}, '*'); }} }});
     </script>
     """, unsafe_allow_html=True)
 
 # ========================================
 # 📁 USER DATA MANAGEMENT
 # ========================================
-def get_user_data_path(username):
+def get_user_data_path(folder_name):
+    """Get user-specific data directory using safe folder name"""
     base_path = Path("user_data")
-    user_path = base_path / username.lower().replace(" ", "_")
+    user_path = base_path / folder_name
     user_path.mkdir(parents=True, exist_ok=True)
     return user_path
 
-def load_user_settings(username):
-    settings_path = get_user_data_path(username) / "settings.json"
+def safe_folder_from_email(email):
+    """Convert email to safe folder name"""
+    return email.lower().replace('@', '_at_').replace('.', '_')
+
+def load_user_settings(folder_name):
+    settings_path = get_user_data_path(folder_name) / "settings.json"
     if settings_path.exists():
         with open(settings_path, 'r') as f:
             return json.load(f)
     return {"theme_mode": "dark", "current_theme": "royal", "language": "en"}
 
-def save_user_settings(username, settings):
-    settings_path = get_user_data_path(username) / "settings.json"
+def save_user_settings(folder_name, settings):
+    settings_path = get_user_data_path(folder_name) / "settings.json"
     with open(settings_path, 'w') as f:
         json.dump(settings, f, indent=2)
 
-def load_user_stats(username):
-    stats_path = get_user_data_path(username) / "stats.json"
+def load_user_stats(folder_name):
+    stats_path = get_user_data_path(folder_name) / "stats.json"
     if stats_path.exists():
         with open(stats_path, 'r') as f:
             return json.load(f)
     return {"total_chats": 0, "total_messages": 0, "tools_used": {}, "last_active": None}
 
-def save_user_stats(username, stats):
-    stats_path = get_user_data_path(username) / "stats.json"
+def save_user_stats(folder_name, stats):
+    stats_path = get_user_data_path(folder_name) / "stats.json"
     with open(stats_path, 'w') as f:
         json.dump(stats, f, indent=2)
 
-def update_user_stats(username, action, tool_name=None):
-    stats = load_user_stats(username)
+def update_user_stats(folder_name, action, tool_name=None):
+    stats = load_user_stats(folder_name)
     if action == "new_chat": stats["total_chats"] += 1
     elif action == "message": stats["total_messages"] += 1
     elif action == "tool" and tool_name: stats["tools_used"][tool_name] = stats["tools_used"].get(tool_name, 0) + 1
     stats["last_active"] = datetime.now().isoformat()
-    save_user_stats(username, stats)
+    save_user_stats(folder_name, stats)
     return stats
 
 # ========================================
@@ -472,21 +292,32 @@ if "butler" not in st.session_state:
     st.session_state.butler = AIAgentSystem()
 if "username" not in st.session_state:
     st.session_state.username = "Guest"
+if "user_folder" not in st.session_state:
+    st.session_state.user_folder = "guest"  # FIXED: Store safe folder name
 if "user_authenticated" not in st.session_state:
     st.session_state.user_authenticated = False
 
 if st.session_state.user_authenticated:
-    user_settings = load_user_settings(st.session_state.username)
+    user_settings = load_user_settings(st.session_state.user_folder)
     if "theme_mode" not in st.session_state: st.session_state.theme_mode = user_settings.get("theme_mode", "dark")
     if "current_theme" not in st.session_state: st.session_state.current_theme = user_settings.get("current_theme", "royal")
     if "language" not in st.session_state: st.session_state.language = user_settings.get("language", "en")
 
+# FIXED: Use user_folder consistently for ChatManager
 if "chat_manager" not in st.session_state:
     if st.session_state.user_authenticated:
-        user_path = get_user_data_path(st.session_state.username)
+        user_path = get_user_data_path(st.session_state.user_folder)
         st.session_state.chat_manager = ChatManager(str(user_path))
     else:
         st.session_state.chat_manager = ChatManager()
+
+# FIXED: Track current messages in session state for instant UI updates
+if "current_messages_cache" not in st.session_state:
+    st.session_state.current_messages_cache = {}
+
+# FIXED: Track previous chat ID to reload messages when chat changes
+if "prev_chat_id" not in st.session_state:
+    st.session_state.prev_chat_id = None
 
 if "current_chat_id" not in st.session_state:
     all_chats = st.session_state.chat_manager.chats
@@ -531,19 +362,23 @@ if not st.session_state.user_authenticated:
                 raw_name = email_input.split('@')[0]
                 clean_name = raw_name.replace('.', ' ').replace('_', ' ').title()
                 
+                # FIXED: Store both username AND safe folder name
                 st.session_state.username = clean_name
                 st.session_state.user_email = email_input
+                st.session_state.user_folder = safe_folder_from_email(email_input)
                 st.session_state.user_authenticated = True
                 
-                safe_folder_name = email_input.lower().replace('@', '_at_').replace('.', '_')
-                user_path = get_user_data_path(safe_folder_name)
+                user_path = get_user_data_path(st.session_state.user_folder)
                 st.session_state.chat_manager = ChatManager(str(user_path))
                 
-                user_settings = load_user_settings(safe_folder_name)
+                # FIXED: Initialize messages cache for this chat manager
+                st.session_state.current_messages_cache = {}
+                
+                user_settings = load_user_settings(st.session_state.user_folder)
                 st.session_state.theme_mode = user_settings.get("theme_mode", "dark")
                 st.session_state.current_theme = user_settings.get("current_theme", "royal")
                 
-                update_user_stats(safe_folder_name, "login")
+                update_user_stats(st.session_state.user_folder, "login")
                 
                 st.success(f"✅ Handshake Successful! Welcome, {clean_name}.")
                 st.balloons()
@@ -580,16 +415,16 @@ with st.sidebar:
     with col_qa1:
         if st.button("➕ New", key="new_chat_btn", use_container_width=True):
             st.session_state.current_chat_id = st.session_state.chat_manager.create_new_chat("💬 New Chat", st.session_state.current_folder)
-            update_user_stats(st.session_state.username, "new_chat")
+            update_user_stats(st.session_state.user_folder, "new_chat")
             st.session_state.toast_message = "New chat created! ✨"
             st.rerun()
     with col_qa2:
         theme_mode = "Light ☀️" if st.session_state.theme_mode == "dark" else "Dark 🌙"
         if st.button(theme_mode, key="theme_toggle", use_container_width=True):
             st.session_state.theme_mode = "light" if st.session_state.theme_mode == "dark" else "dark"
-            user_settings = load_user_settings(st.session_state.username)
+            user_settings = load_user_settings(st.session_state.user_folder)
             user_settings["theme_mode"] = st.session_state.theme_mode
-            save_user_settings(st.session_state.username, user_settings)
+            save_user_settings(st.session_state.user_folder, user_settings)
             st.session_state.toast_message = f"Switched to {st.session_state.theme_mode} mode!"
             st.rerun()
     
@@ -599,9 +434,9 @@ with st.sidebar:
     selected_theme = st.selectbox("Choose theme:", options=list(theme_options.keys()), format_func=lambda x: theme_options[x], index=list(theme_options.keys()).index(st.session_state.current_theme), key="theme_selector")
     if selected_theme != st.session_state.current_theme:
         st.session_state.current_theme = selected_theme
-        user_settings = load_user_settings(st.session_state.username)
+        user_settings = load_user_settings(st.session_state.user_folder)
         user_settings["current_theme"] = selected_theme
-        save_user_settings(st.session_state.username, user_settings)
+        save_user_settings(st.session_state.user_folder, user_settings)
         st.session_state.toast_message = f"Theme: {theme_options[selected_theme]}!"
         st.rerun()
     
@@ -612,14 +447,14 @@ with st.sidebar:
         if st.button("👑\nButler", key="p_butler", use_container_width=True, type="secondary"):
             st.session_state.active_mode = "butler"
             st.session_state.current_chat_id = st.session_state.chat_manager.create_new_chat("👑 Butler Session", st.session_state.current_folder)
-            update_user_stats(st.session_state.username, "new_chat")
+            update_user_stats(st.session_state.user_folder, "new_chat")
             st.session_state.toast_message = "Butler Mode! 👑"
             st.rerun()
     with c2:
         if st.button("🔥\nSavage", key="p_savage", use_container_width=True, type="secondary"):
             st.session_state.active_mode = "roast"
             st.session_state.current_chat_id = st.session_state.chat_manager.create_new_chat("🔥 Savage Session", st.session_state.current_folder)
-            update_user_stats(st.session_state.username, "new_chat")
+            update_user_stats(st.session_state.user_folder, "new_chat")
             st.session_state.toast_message = "Savage Mode! 🔥"
             st.rerun()
     c3, c4 = st.columns(2)
@@ -627,42 +462,34 @@ with st.sidebar:
         if st.button("💻\nCode", key="p_code", use_container_width=True, type="secondary"):
             st.session_state.active_mode = "code"
             st.session_state.current_chat_id = st.session_state.chat_manager.create_new_chat("💻 Code Dojo", st.session_state.current_folder)
-            update_user_stats(st.session_state.username, "new_chat")
+            update_user_stats(st.session_state.user_folder, "new_chat")
             st.session_state.toast_message = "Code Dojo! 💻"
             st.rerun()
     with c4:
         if st.button("🧘\nZen", key="p_zen", use_container_width=True, type="secondary"):
             st.session_state.active_mode = "zen"
             st.session_state.current_chat_id = st.session_state.chat_manager.create_new_chat("🧘 Zen Mode", st.session_state.current_folder)
-            update_user_stats(st.session_state.username, "new_chat")
+            update_user_stats(st.session_state.user_folder, "new_chat")
             st.session_state.toast_message = "Zen Mode! 🧘"
             st.rerun()
-            
+    
     st.divider()
     st.markdown("<h4 style='color:#FFD700; margin-bottom: 15px;'>🎭 AI PERSONA</h4>", unsafe_allow_html=True)
-    persona_options = {"default": "🤖 Default", "professor": "🎓 Professor", "business": "💼 Business", "friendly": "😎 Friendly"}
-    selected_persona = st.selectbox("Choose persona:", options=list(persona_options.keys()), format_func=lambda x: persona_options[x], index=list(persona_options.keys()).index(st.session_state.current_persona), key="persona_selector")
+    persona_options_sidebar = {"default": "🤖 Default", "professor": "🎓 Professor", "business": "💼 Business", "friendly": "😎 Friendly"}
+    selected_persona = st.selectbox("Choose persona:", options=list(persona_options_sidebar.keys()), format_func=lambda x: persona_options_sidebar[x], index=list(persona_options_sidebar.keys()).index(st.session_state.current_persona), key="persona_selector")
     if selected_persona != st.session_state.current_persona:
         st.session_state.current_persona = selected_persona
-        st.session_state.toast_message = f"Persona: {persona_options[selected_persona]}!"
+        st.session_state.toast_message = f"Persona: {persona_options_sidebar[selected_persona]}!"
         st.rerun()
     
     st.divider()
     st.markdown("<h4 style='color:#FFD700; margin-bottom: 15px;'>🛠️ SUPER TOOLS (30)</h4>", unsafe_allow_html=True)
-    tool_options = [
-        "💬 Normal Chat", "💻 GitHub Assistant", "👤 GitHub Profile Analyzer",
-        "📺 YouTube Summarizer", "📄 PDF Chat", "✍️ Quick Writer", "💻 Code Helper", "📰 Daily Briefing",
-        "🔍 Web Search", "📄 Article Summarizer", "🃏 Flashcard Generator", "📝 Quiz Generator",
-        "🌐 Translator", "📊 Text Analyzer", "💡 Idea Generator", "🐙 GitHub Analyzer",
-        "📄 Resume Analyzer", "📋 Meeting Notes", "🔐 Password Generator", "📱 QR Code Generator",
-        "🍳 Recipe Generator", "📊 CSV Data Analyzer", "✍️ Text to Handwriting", "🎨 Color Palette",
-        "📧 Email Optimizer", "🎨 AI Image Studio", "📸 Magic Vision", "🗣️ AI Debate Partner", "🌙 Dream Interpreter"
-    ]
+    tool_options = ["💬 Normal Chat", "💻 GitHub Assistant", "👤 GitHub Profile Analyzer", "📺 YouTube Summarizer", "📄 PDF Chat", "✍️ Quick Writer", "💻 Code Helper", "📰 Daily Briefing", "🔍 Web Search", "📄 Article Summarizer", "🃏 Flashcard Generator", "📝 Quiz Generator", "🌐 Translator", "📊 Text Analyzer", "💡 Idea Generator", "🐙 GitHub Analyzer", "📄 Resume Analyzer", "📋 Meeting Notes", "🔐 Password Generator", "📱 QR Code Generator", "🍳 Recipe Generator", "📊 CSV Data Analyzer", "✍️ Text to Handwriting", "🎨 Color Palette", "📧 Email Optimizer", "🎨 AI Image Studio", "📸 Magic Vision", "🗣️ AI Debate Partner", "🌙 Dream Interpreter"]
     if st.session_state.selected_tool not in tool_options: st.session_state.selected_tool = "💬 Normal Chat"
     selected_tool = st.selectbox("Select tool:", options=tool_options, index=tool_options.index(st.session_state.selected_tool), key="tool_selector")
     if selected_tool != st.session_state.selected_tool:
         st.session_state.selected_tool = selected_tool
-        update_user_stats(st.session_state.username, "tool", selected_tool)
+        update_user_stats(st.session_state.user_folder, "tool", selected_tool)
         st.session_state.toast_message = f"Tool: {selected_tool}!"
         st.rerun()
     
@@ -746,12 +573,10 @@ with st.sidebar:
     if st.session_state.current_folder == "all": chat_ids = list(st.session_state.chat_manager.chats.keys())
     elif st.session_state.current_folder == "pinned": chat_ids = list(st.session_state.chat_manager.get_pinned_chats().keys())
     else: chat_ids = st.session_state.chat_manager.get_folder_chats(st.session_state.current_folder)
-    
     pinned_chats = [cid for cid in chat_ids if st.session_state.chat_manager.chats[cid].get("pinned")]
     other_chats = [cid for cid in chat_ids if not st.session_state.chat_manager.chats[cid].get("pinned")]
     if search_query: chat_ids = st.session_state.chat_manager.search_chats(search_query)
     else: chat_ids = pinned_chats + other_chats
-    
     for chat_id in chat_ids[:15]:
         chat_data = st.session_state.chat_manager.chats.get(chat_id, {})
         if st.session_state.renaming_chat_id == chat_id:
@@ -795,7 +620,7 @@ with st.sidebar:
     
     st.divider()
     st.markdown("<h4 style='color:#FFD700; margin-bottom: 15px;'>📊 YOUR STATS</h4>", unsafe_allow_html=True)
-    user_stats = load_user_stats(st.session_state.username)
+    user_stats = load_user_stats(st.session_state.user_folder)
     col_s1, col_s2 = st.columns(2)
     with col_s1:
         st.markdown(f"""<div class="stat-card"><div class="stat-value">{user_stats.get('total_chats', 0)}</div><div class="stat-label">Chats</div></div>""", unsafe_allow_html=True)
@@ -813,6 +638,8 @@ with st.sidebar:
     if st.button("🗑️ Clear Chat", use_container_width=True):
         st.session_state.chat_manager.chats[st.session_state.current_chat_id]["messages"] = []
         st.session_state.chat_manager.save_chats()
+        # FIXED: Clear cache too
+        st.session_state.current_messages_cache[st.session_state.current_chat_id] = []
         st.session_state.toast_message = "Chat cleared"
         st.rerun()
     if st.button("🧠 Clear Memory", use_container_width=True):
@@ -832,7 +659,9 @@ if st.session_state.selected_tool != "💬 Normal Chat":
     except Exception as e:
         st.error(f"Error: {str(e)}")
 
-# Main chat interface
+# ========================================
+# 💬 MAIN CHAT INTERFACE - FIXED ARCHITECTURE
+# ========================================
 current_mode_config = Config.MODES.get(st.session_state.active_mode, Config.MODES["butler"])
 ist = pytz.timezone('Asia/Kolkata')
 now = datetime.now(ist)
@@ -851,7 +680,24 @@ if st.session_state.toast_message:
     st.markdown(f'<div class="toast">{st.session_state.toast_message}</div>', unsafe_allow_html=True)
     st.session_state.toast_message = None
 
-current_messages = st.session_state.chat_manager.get_chat_messages(st.session_state.current_chat_id)
+# FIXED: Detect chat change and invalidate cache
+if st.session_state.prev_chat_id != st.session_state.current_chat_id:
+    st.session_state.prev_chat_id = st.session_state.current_chat_id
+    # Invalidate cache for new chat - will be reloaded below
+    if st.session_state.current_chat_id not in st.session_state.current_messages_cache:
+        st.session_state.current_messages_cache[st.session_state.current_chat_id] = None
+
+# FIXED: Get messages - use cache if available, otherwise load from chat_manager
+chat_id = st.session_state.current_chat_id
+if chat_id not in st.session_state.current_messages_cache or st.session_state.current_messages_cache[chat_id] is None:
+    # First time or invalidated - load from chat manager
+    current_messages = st.session_state.chat_manager.get_chat_messages(chat_id)
+    st.session_state.current_messages_cache[chat_id] = current_messages
+else:
+    # Use cached messages (includes unsaved new messages)
+    current_messages = st.session_state.current_messages_cache[chat_id]
+
+# Display existing messages
 for msg in current_messages:
     if msg["role"] != "system":
         with st.chat_message(msg["role"]):
@@ -871,7 +717,9 @@ if audio_input is not None:
     if audio_hash != st.session_state.get("last_processed_audio"):
         try:
             transcript = st.session_state.butler.client.audio.transcriptions.create(
-                file=("recording.webm", audio_input.getvalue()), model="whisper-large-v3", response_format="text"
+                file=("recording.webm", audio_input.getvalue()),
+                model="whisper-large-v3",
+                response_format="text"
             )
             final_prompt = transcript
             st.session_state.last_processed_audio = audio_hash
@@ -880,21 +728,49 @@ if audio_input is not None:
             final_prompt = None
 
 if final_prompt:
-    st.session_state.chat_manager.add_message(st.session_state.current_chat_id, "user", final_prompt)
-    update_user_stats(st.session_state.username, "message")
-    with st.chat_message("user"): st.markdown(final_prompt)
+    # FIXED: Add user message to chat manager
+    st.session_state.chat_manager.add_message(chat_id, "user", final_prompt)
+    update_user_stats(st.session_state.user_folder, "message")
     
+    # FIXED: Also add to session state cache immediately so UI shows it
+    user_msg = {"role": "user", "content": final_prompt, "timestamp": datetime.now().isoformat()}
+    if chat_id not in st.session_state.current_messages_cache:
+        st.session_state.current_messages_cache[chat_id] = []
+    st.session_state.current_messages_cache[chat_id].append(user_msg)
+    
+    # Display user message (immediate, no rerun needed)
+    with st.chat_message("user"):
+        st.markdown(final_prompt)
+    
+    # Auto-rename chat if first message
     user_msg_count = sum(1 for m in current_messages if m["role"] == "user")
     if user_msg_count == 0:
-        title = st.session_state.butler.generate_chat_title(final_prompt)
-        st.session_state.chat_manager.rename_chat(st.session_state.current_chat_id, title)
+        try:
+            title = st.session_state.butler.generate_chat_title(final_prompt)
+            st.session_state.chat_manager.rename_chat(chat_id, title)
+        except:
+            pass
     
+    # FIXED: Get AI response with FULL context
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
             voice_settings = {'lang': st.session_state.voice_lang, 'speed': st.session_state.voice_speed}
+            
+            # FIXED: Build complete message history for AI (includes current user message)
+            messages_for_ai = []
+            for m in st.session_state.current_messages_cache[chat_id]:
+                if m["role"] in ["user", "assistant"]:
+                    messages_for_ai.append({
+                        "role": m["role"],
+                        "content": m["content"]
+                    })
+            
             res = st.session_state.butler.process_query(
-                final_prompt, current_messages, st.session_state.voice_toggle,
-                custom_prompt=current_mode_config["prompt"], voice_settings=voice_settings
+                final_prompt,
+                messages_for_ai,  # FULL conversation history
+                st.session_state.voice_toggle,
+                custom_prompt=current_mode_config["prompt"],
+                voice_settings=voice_settings
             )
         
         agent = res.get('agent_used', 'AI')
@@ -911,8 +787,13 @@ if final_prompt:
         
         if response_text and response_text.strip():
             st.markdown(response_text)
-            st.session_state.chat_manager.add_message(st.session_state.current_chat_id, "assistant", response_text)
-            update_user_stats(st.session_state.username, "message")
+            
+            # FIXED: Save AI response to chat manager AND cache
+            st.session_state.chat_manager.add_message(chat_id, "assistant", response_text)
+            update_user_stats(st.session_state.user_folder, "message")
+            
+            ai_msg = {"role": "assistant", "content": response_text, "timestamp": datetime.now().isoformat()}
+            st.session_state.current_messages_cache[chat_id].append(ai_msg)
             
             st.markdown("---")
             st.markdown("**💡 You might also want to ask:**")
@@ -921,9 +802,10 @@ if final_prompt:
             for i, suggestion in enumerate(suggestions):
                 with cols[i]:
                     if st.button(suggestion, key=f"sugg_{i}", use_container_width=True):
-                        st.session_state.chat_manager.add_message(st.session_state.current_chat_id, "user", suggestion)
+                        st.session_state.chat_manager.add_message(chat_id, "user", suggestion)
+                        sug_msg = {"role": "user", "content": suggestion, "timestamp": datetime.now().isoformat()}
+                        st.session_state.current_messages_cache[chat_id].append(sug_msg)
                         st.rerun()
-            st.rerun()
 
 st.markdown(f"""
 <div style='text-align: center; margin-top: 50px; padding: 20px; color: {footer_color}; font-size: 0.9rem; border-top: 1px solid {current_mode_config['color']}30;'>
